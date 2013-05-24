@@ -19,7 +19,7 @@
 
 using namespace std;
 
-float * cont_rscl( float * fObsWave, float * fObsData, float * fThrWave, float * fThrData, int iElements, 
+float * cont_rscl( float *  fObsWave, float * fObsData, float * fThrWave, float * fThrData, int iElements, 
 		       float * fSig, int iElemSig, float * fRf, int iElemRf, int iMessage, int iStrong, int iConst, 
 		       float fSigma, int iUpcut, float * fW_highprio, int iElemhighprio, int iIter, int iLin, int iVdop )
 {

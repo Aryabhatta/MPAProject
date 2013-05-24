@@ -77,7 +77,7 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
     {
 	    string strSolarFlux("/home/shrikant/Desktop/MPA/Files/solarflux.fits");
 	    
-	    cout << "Reading solar flux from fits file" << endl;
+	    cout << endl << "Loading solar flux spectrum from fits file as reference" << endl;
 	    
 	    fitsfile * fptr;
 	    int iStatus = 0; // Initialise status
@@ -97,35 +97,44 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
 	    // Creating a large float array to read elements from flux file
 	    // NOTE: however, creating such a large array is discouraged & 
 	    // the possibility to access small chunks of it should be seen
+	    	      
+	    int hdutype;
+	    fits_get_hdu_type(fptr, &hdutype, &iStatus);
+	    switch(hdutype)
+	    {
+	    case IMAGE_HDU: cout << "Image HDU " << endl; break;
+	    case ASCII_TBL: cout <<  "Ascii Table" << endl; break;
+	    case BINARY_TBL: cout << "Binary Table" << endl; break;
+	    }
 	    
+//	    int hdunum =0;
+//	    fits_get_num_hdus(fptr, &hdunum, &iStatus );
+//	    cout << "No of HDU's:" << hdunum << endl;
+	    
+//	    long nrows = 0;
+//	    fits_get_num_rows( fptr, &nrows, &iStatus );
+//	    cout << "No of rows:" << nrows << endl;
+	    
+//	    fits_read_col( fptr, TFLOAT, 2, 1, 1, nelements, &nullval, fSolarflux, &anynull, &iStatus);
+	    
+	    //reading a small chunk of 10 elements
 	    int iNoData = 10;
-	    //reading a small chunk of 100 elements
-	    float * fSolarflux = new float( 100 );
+	    	    
+	    float fSolarflux[iNoData]; //just contains flux, wavelength to be stored in separate array
 	    
 	    float nullval = 0;
 	    int anynull = 0;
-	    int nelements = 3;
+	    int nelements = iNoData;
 	    int firstelem = 1; // reading from start, can be changed
 	    
-//	    int fits_read_col / ffgcv
-//	          (fitsfile *fptr, int datatype, int colnum, LONGLONG firstrow, LONGLONG firstelem,
-//	           LONGLONG nelements, DTYPE *nulval, DTYPE *array, int *anynul, int *status)
+	    fits_read_img(fptr, TFLOAT, firstelem, nelements, &nullval, fSolarflux, &anynull, &iStatus);
 	    	    
-	    //fits_read_col( fptr, TFLOAT, 2, 1, 1, nelements, &nullval, fSolarflux, &anynull, &iStatus);
-	    fits_read_img(fptr, TFLOAT, firstelem, nelements, &nullval, &fSolarflux[0], &anynull, &iStatus);
-	    
-	    if( iStatus ) /* print any error messages */
-	    {
-	        fits_report_error( stderr, iStatus );
-	    }
-	    
 	    //printing fsolarflux
 	    for(i=0;i<iNoData;i++)
 	    {
 	    	cout<< fSolarflux[i] << " ";
 	    }
 
-	    delete[] fSolarflux;
 	    fits_close_file( fptr, &iStatus );
 
 	    if( iStatus ) /* print any error messages */

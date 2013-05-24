@@ -21,6 +21,7 @@
 #include <sstream>
 #include <stdlib.h>
 #include "lfp.hpp"
+#include "readGridfile.hpp"
 
 using namespace std;
 
@@ -409,14 +410,16 @@ for( int i = 0; i< iNpar-1 ; i++)
         iExtrapol = 1;  
     }
 
-    /********************************
-
+    /*****************************************************
     // Routine to read the grid file
-    // How to proceed ?
-    
-    *******************************/
+    *****************************************************/
+    //LOGIC HERE MOVED BELOW FOR SIMPLCITY TO DEBUG( JUST 1 CALL)
+ 
 }  
 
+string strGridFileSpecs("/home/shrikant/Desktop/MPA/Files/lf_grid4300.fits");
+ 
+ readGrid( strGridFileSpecs );
 
 return false; // return error 
 }

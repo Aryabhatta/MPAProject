@@ -9,11 +9,14 @@ CFLAGS =
 # Options for CFITSIO
 CFITSIO = -L. -lcfitsio -lm
 
-project: getchi.o ecorr.o cont_rscl.o get_rv.o lfp.o read_lf_grid.o modules.o idlFuncn.o
-	$(CC) -o project getchi.o ecorr.o cont_rscl.o get_rv.o lfp.o read_lf_grid.o modules.o idlFuncn.o $(CFITSIO)
+project: getchi.o readGridfile.o ecorr.o cont_rscl.o get_rv.o lfp.o read_lf_grid.o modules.o idlFuncn.o
+	$(CC) -o project getchi.o readGridfile.o ecorr.o cont_rscl.o get_rv.o lfp.o read_lf_grid.o modules.o idlFuncn.o $(CFITSIO)
 
 getchi.o: getchi.cpp
 	$(CC) $(CFLAGS) -c getchi.cpp $(CFITSIO)
+	
+readGridfile.o: readGridfile.cpp readGridfile.hpp
+	$(CC) $(CFLAGS) -c readGridfile.cpp
 	
 ecorr.o: ecorr.cpp ecorr.hpp
 	$(CC) $(CFLAGS) -c ecorr.cpp
