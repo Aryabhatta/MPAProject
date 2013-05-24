@@ -1,0 +1,50 @@
+## This file contains translation of elements from their naming in idl version of
+## software to CPP Version
+
+General Note: if the variable name is kept the same, a letter either 'f', 'i' or
+'d' is prepended ahead of the varible to show that the variable is a float, int or
+double. Such variable translations are not covered here
+
+##################################################################################
+#                           FILE: CONT_RSCL.CPP                                  #
+##################################################################################
+IDL_VAR	CPP_VARIABLE
+
+ox 		fObsW
+ox1		fObsWave
+oy1		fObsData
+tx1		fThrWave
+ty1		fThrData
+x		fObsWlog							
+##################################################################################
+#                           FILE: GET_RV.CPP                                     #
+##################################################################################
+
+##################################################################################
+#                           FILE: ECORR.CPP                                      #
+##################################################################################
+IDL_VAR	CPP_VAR
+
+onr		iObsElem
+tnr		iThrElem
+ox		fObsWave
+oy		fObsData
+tx		fThrWave
+ty		fThrData					
+##################################################################################
+#                           FILE: LFP.CPP                                        #
+##################################################################################
+
+##################################################################################
+#                           FILE: READ_LF_GRID.CPP                               #
+##################################################################################
+
+##################################################################################
+#                           FILE: GETCHI.CPP                                     #
+##################################################################################
+IDL_VAR	CPP_VAR
+
+sx		fSx
+sy		fSy
+x		fWavelen
+y 		fData
