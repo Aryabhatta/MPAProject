@@ -16,9 +16,12 @@
 
 #include <iostream>
 #include <fitsio.h>
+#include <fftw3.h>
+//#include "fftw++.h"
 #include "get_rv.hpp"
 
 using namespace std;
+//using namespace fftwpp;
 
 // Routine to calculate the radial velocity
 // copy header part from get_rv.pro
@@ -404,8 +407,8 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
         if( iNomc == 0 )
         {
             //cout << "Mean sp = " << 
-            cout << "Norm sp = " << dNorm_SP ;
-            cout << "  Norm rv = " << dNorm_RV << endl;
+            cout << " Norm sp = " << dNorm_SP ;
+            cout << " Norm rv = " << dNorm_RV << endl;
         }
     }
     else
@@ -424,10 +427,115 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     // need to zero down on which library to use
     // functions calculate the value of fConvY - important
     // TODO -CHANGE-    
-
-    // allocate memory for fConvY
-    // fConvY = new float [ lNrPix ];
-    // FFT
+    
+    
+    // prepare arrays for FFT
+    for( i=0; i < lNrPix; i++ )
+    {
+    	dNY_RV[i] = dNY_RV[i]/ dNorm_RV;
+    	dNY_SP[i] = dNY_SP[i]/ dNorm_SP;
+    }
+    
+    // Taking the FFTW transforms
+    fftw_complex *in, *out;
+    fftw_plan p;
+    
+    in  = (fftw_complex*)malloc(sizeof(fftw_complex) * lNrPix);
+    out = (fftw_complex*)malloc(sizeof(fftw_complex) * lNrPix);
+    
+    // Copy NY_SP to in
+    for( i=0; i< lNrPix; i++)
+    {
+    	// just copying the real part
+    	in[i][0] = dNY_RV[i];
+    }
+    
+    // TODO take a Inverse Fourier Transform of NY_RV
+    p = fftw_plan_dft_1d( lNrPix, in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
+    fftw_execute(p);
+    
+    fftw_destroy_plan(p);
+    
+//    // print
+//    cout << endl << "Printing dNY_RV" << endl;
+//    for( i=0; i< lNrPix; i++)
+//    {
+//    	cout << dNY_RV[i] << " " ;
+//    }
+//    
+//    cout << endl << "Print inverse transform of dNY_RV" << endl;
+//    for( i=0; i< lNrPix; i++)
+//    {
+//    	cout << out[i] << " " ;
+//    }
+    
+         
+    // take a Forward Fourier Transform of NY_SP
+    fftw_complex *in1, *out1, *temp, *out2;
+    fftw_plan p1, p2;
+    
+    in1  = (fftw_complex*)malloc(sizeof(fftw_complex) * lNrPix);
+    out1 = (fftw_complex*)malloc(sizeof(fftw_complex) * lNrPix);
+    temp = (fftw_complex*)malloc(sizeof(fftw_complex) * lNrPix);
+    out2 = (fftw_complex*)malloc(sizeof(fftw_complex) * lNrPix);
+    
+    // Copy NY_SP to in
+    for( i=0; i< lNrPix; i++)
+    {
+    	// just copying the real part
+    	in1[i][0] = dNY_SP[i];
+    }
+    
+    p1 = fftw_plan_dft_1d( lNrPix, in1, out1, FFTW_FORWARD, FFTW_ESTIMATE);
+    fftw_execute(p1);    
+    fftw_destroy_plan(p1);
+    
+    // Multiply & combine in single temp array
+    for( i=0; i< lNrPix; i++)
+    {
+    	// Manually copying the real & complex part, Not sure however if 
+    	// this is the right way to do so
+    	temp[i][0] = out[i][0] * out1[i][0];
+    	temp[i][1] = out[i][1] * out1[i][1];
+    }
+    
+    // take inverse fourier transform of temp array
+    p2 = fftw_plan_dft_1d( lNrPix, temp, out2, FFTW_BACKWARD, FFTW_ESTIMATE);
+    fftw_execute(p2);    
+    fftw_destroy_plan(p2);
+    
+    // Now out2 contains the final transformed array which needs to be shifted & stored in ConvY
+    fConvY = new float[ lNrPix ];
+    float * fConvYTemp = new float[ lNrPix];
+    
+    for( i=0; i< lNrPix; i++ )
+    {
+    	// Just copying the real part of result
+    	// Need to cross check if that's the RIGHTA way
+    	fConvYTemp[i] = out2[i][0];
+    }
+    
+    // Unallocate fftw arrays
+    fftw_free(in);
+    fftw_free(out);
+    fftw_free(in1);
+    fftw_free(out1);
+    fftw_free(temp);
+    
+    // Shift by lshift & store in ConvY //CIRCULAR SHIFT
+    for( i=0; i<lNrPix; i++)
+    {
+    	fConvY[i] = fConvYTemp[(i+lShift)%lNrPix];
+    }
+    
+    // deleting the memory allocated for temporary array for shifts
+    delete [] fConvYTemp;
+    
+    // Update ConvY depending on ConvX
+    for( i=0; i< lNrPix; i++)
+    {
+    	fConvY[i] = ((fConvX[lNrPix-1]-fConvX[0])/lNrPix) * fConvY[i];
+    }
     
     return bError;
 }

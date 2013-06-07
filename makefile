@@ -4,13 +4,16 @@ all: project clean
 CC = g++
 
 # Options while compiling
-CFLAGS = 
+CFLAGS = # -fopenmp 
 
 # Options for CFITSIO
 CFITSIO = -L. -lcfitsio -lm
 
+# Options for FFTW
+FFTW =  -lfftw3 -lfftw3_omp
+
 project: getchi.o readGridfile.o ecorr.o cont_rscl.o get_rv.o lfp.o read_lf_grid.o modules.o idlFuncn.o
-	$(CC) -o project getchi.o readGridfile.o ecorr.o cont_rscl.o get_rv.o lfp.o read_lf_grid.o modules.o idlFuncn.o $(CFITSIO)
+	$(CC) -o project getchi.o readGridfile.o ecorr.o cont_rscl.o get_rv.o lfp.o read_lf_grid.o modules.o idlFuncn.o $(CFITSIO) $(FFTW)
 
 getchi.o: getchi.cpp
 	$(CC) $(CFLAGS) -c getchi.cpp $(CFITSIO)
@@ -42,5 +45,11 @@ idlFuncn.o: idlFuncn.cpp idlFuncn.hpp
 # Cleaning the intermediates
 clean:
 #	rm -f *.o
+	rm -f *~
+	rm -f *.gch
+
+# Cleaning all  the intermediates
+cleanAll:
+	rm -f *.o
 	rm -f *~
 	rm -f *.gch

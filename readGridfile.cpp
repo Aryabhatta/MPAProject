@@ -64,6 +64,15 @@ void readGrid( string GridFileSpecs )
     }
     
     delete[] fWave;
+    
+    /*************************************************************
+     * For HDU's 2nd & 3rd, current logic is to read them row wise
+     * As reading by row is good for memory access with no jumps
+     * But the files currently are in wrong order, rows now should be 
+     * made coloumns & col as rows, waiting for that...
+     * Leaving the function, keeping this logic intact
+     **************************************************************/
+   
         
     // Move to 2nd HDU
     hdunum = 2;    
@@ -93,7 +102,7 @@ void readGrid( string GridFileSpecs )
 
     int colnum = 3, firstrow=1;
     // Starting from
-    firstelem = 14145;
+    firstelem = 1;
     int dntknw=1;
     
     // # Wavelengths to read
@@ -103,8 +112,8 @@ void readGrid( string GridFileSpecs )
     // request to change the format from col,row to row, col
     
     // routine to read the row corresponding to iFid (values in data)
-    //fits_read_img( fptr, TFLOAT, firstelem, nelements, &nullval, fData, &anynull, &iStatus);
-    fits_read_col( fptr, TFLOAT, colnum, firstrow, dntknw, nelements, &nullval, fData, &anynull, &iStatus);
+    fits_read_img( fptr, TFLOAT, firstelem, nelements, &nullval, fData, &anynull, &iStatus);
+    //fits_read_col( fptr, TFLOAT, colnum, firstrow, dntknw, nelements, &nullval, fData, &anynull, &iStatus);
    
     //print out the wavelengths read
     for( i=0; i<naxis2; i++)
@@ -134,6 +143,26 @@ void readGrid( string GridFileSpecs )
     // Read no of rows in the table
     fits_read_key( fptr, TINT, "NAXIS2" , &naxis2, comment, &iStatus);
     cout << "Naxis2 = #rows = " << naxis2 << "  Comment = " << comment<< endl;
+    
+    // Read elements
+    float * fData1 = new float[ 10 ];
+    
+    // Starting from wavelength
+    firstelem = 1;
+    
+    // # fluxes to read
+    nelements = 10;
+    
+    // routine to read the row corresponding to iFid (values in data)
+    fits_read_img( fptr, TFLOAT, firstelem, nelements, &nullval, fData1, &anynull, &iStatus);
+   
+    //print out the wavelengths read
+    for( i=0; i<10; i++)
+    {
+    	cout << fData1[i] << "  ";
+    }
+    
+    delete[] fData1;
     
     fits_close_file( fptr, &iStatus );
     

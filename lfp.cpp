@@ -418,25 +418,9 @@ for( int i = 0; i< iNpar-1 ; i++)
 }  
 
 string strGridFileSpecs("/home/shrikant/Desktop/MPA/Files/lf_grid4300.fits");
- 
- readGrid( strGridFileSpecs );
+
+// Read the grid file with specification in arguments
+readGrid( strGridFileSpecs );
 
 return false; // return error 
 }
-
-/*
-int main()
-{
-
-float fW, fF, fTeff, fLogg, fLogz, fXi, fEps_dev[2],fGamma, fGauss;
-
-float fMg_eps = 0.0;
-fEps_dev[0] = 12.00;
-fEps_dev[1] = fMg_eps;
-
-int iNomessage,iNomc,iCnvl;
-int iExtrapol = 0;
-string strGrid("noconv"), strRange("HALPHA");
-lfp(&fW,&fF,fTeff,fLogg, fLogz, fXi, fEps_dev, fGauss, fGamma, iExtrapol,strGrid,strRange,iNomessage,iCnvl,iNomc);
-return 0;
-}*/
