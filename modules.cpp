@@ -94,14 +94,61 @@ void integ( double * X, double * Y, int iArraySz, double * dRes )
 		dRes[i] = 0.0d;
 	}
 	
-	// dummy integration function
-    for(int i=0; i < iArraySz; i++)
+	// kernel to do integration ( using trapeziodal rule )
+    int ilo = 0; // low of absicca
+    int ihi = 0; // highest sample
+    
+    int n = 0;
+    double z[iArraySz];
+    double sum = 0.0d;
+    /******************************************************
+     * As per this logic, dRes will contain only iArraySz-2 
+     * valid values, dRes[iArraySz-1] would be 0
+     * ****************************************************/
+	    
+    // not taking into consideration imin & imax logic
+    // just perforing a simple integration'
+    // code help taken from www.astro.washington + integ + idl    
+    for(int i=0; i < iArraySz-1; i++)
     {
-    	for(int j=0; j<=i; j++)
-    	{
-    		dRes[i] += Y[j];
-    	}
+    	ihi = i;
+    	n = ihi - ilo;
+    	sum = 0.0d;
+    	
+    	for( int j=0; j< i; j++)// to compute integral upto 'i'
+	    {
+    		z[j] = 0; //resetting value
+	    	z[j] = Y[j+1] + Y[j]; // computing value
+	    }
+    	
+    	for( int j=0; j< i; j++) // to compute integral upto 'i'
+	    {
+	    	sum += ( (z[j]/2) * (X[j+1]-X[j]) );
+	    }
+    	
+    	dRes[i] = sum; 
     }
+
+/*    
+    // kernel to do integration ( using trapeziodal rule )
+    int ilo = 0; // low of absicca
+    int ihi = iArraysz-1; // highest sample
+    
+    int n = ihi - ilo;
+    double z[iArraySz];
+    double sum = 0.0d;
+    
+    for( int i=0; i< iArraysz-1; i++)
+    {
+    	z[i] = Y[i+1] + y[i];
+    }
+    
+    for( int i=0; i< iArraySz-1; i++)
+    {
+    	sum += ( (z[i]/2) * (X[i+1]-X[i]) );
+    }
+ */
+    
 }
 
 

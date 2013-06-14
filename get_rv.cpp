@@ -425,9 +425,8 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
 
     // FFT functions to calculate the fourier & inverse fourier transforms
     // need to zero down on which library to use
-    // functions calculate the value of fConvY - important
-    // TODO -CHANGE-    
-    
+    // functions calculate the value of fConvY - important   
+    cout << "lnrpix" << lNrPix << endl;
     
     // prepare arrays for FFT
     for( i=0; i < lNrPix; i++ )
