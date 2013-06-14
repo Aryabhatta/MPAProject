@@ -37,14 +37,16 @@ using namespace std;
 ROUTINE
 	getchi.cpp
 INPUTS
-	fin: input file with grid points: T,g,m
-	fid: fiber number
+	fin: input file with grid points: T,g,m (.def file)
+	fid: fiber number						( in {1,640})
+	
 OUTPUT
 
 -------------------------------------------------------------------------*/
 
 int main(int iArgCnt, char * pArg[])
 {
+
 int 	iFid  = 500; // Sample, actual value would be from pArg[2] -CHANGE-
 int	    iConv = 1;
 int 	iNomc = 0;
@@ -69,13 +71,21 @@ string strSpecs( "spPlate-1960-53287.fits"                         );
 
 string strFin( "Input_File_Name" );  // set it to pArg[1] -CHANGE-
                                      // file of grid points Rlogz, Rteff, Rlogg
+/*
+ * Here in all References:
+ * Rlogz - determines the metallicity of star
+ * Rteff - effective temperature of star
+ * Rlogg - specific gravity of star
+ */									
+
 string strLog( strSpecs );
 
 string strTemp( "_"    );
 strTemp.append( "500"  ); // sample fid no -CHANGE-
 strTemp.append( ".log" );
 
-strLog.replace( strLog.find(".fits"), 5, strTemp);// log file name complete
+// Creatung a name for a log file
+strLog.replace( strLog.find(".fits"), 5, strTemp);
 
 string strGrid( "noconv" );	// explicit convolution
 
@@ -125,7 +135,8 @@ int iValid = 0;
 // Input file specification
 //string strInputFilePath = strSpdir + strFin;  -CHANGE-
 //string strInputFilePath( "/home/shrikant/Desktop/MPA/Files/SampleSpec.fits" );
-string strInputFilePath( "/home/shrikant/Desktop/MPA/Files/foutr1p1082f180" );
+string strInputFilePath( "/home/shrikant/Desktop/MPA/Files/foutr1p1082f180" ); // sample file name
+																			// contains list of stars with Rlogz, Rteff, Rlogg
 
 // Status Msg
 cout << "Reading grid points from " << strInputFilePath << endl;
@@ -155,6 +166,11 @@ string strWcen("");
 
 int arrWr [2];
 int arrWrc[2];
+
+/*
+ * The FITS file contains the observations for a particular plate, MJD such that we can read 
+ * the flux from the file corresponding to 640 fibers & 3857 wavelengths for each of them
+ */
 
 string strFitsSpec( "" );
 strFitsSpec.append( strSpobs );
@@ -202,12 +218,13 @@ fits_read_key( fptr, TFLOAT, "COEFF1" , &fCoeff1, comment, &iStatus);
 cout << "Coeff1 = " << fCoeff1 << "  Comment = " << \
 comment<< endl << endl;
 
-// creating Wavelength array
+// * creating Wavelength array *
 float * fWavelengths = new float [ naxis1 ];
 
 int iCntr1 = 0;
+
 // cases on exceptional values of dCrval1 and dCoeff1 not handled
-// Filling the wavelengths array
+// Filling the wavelengths array with wavelengths (corresponding to CRVAL1, COEFF1)
 while( iCntr1 < naxis1 )
 {
     fWavelengths[ iCntr1 ] = powf( 10.0, fCrval1 );
@@ -226,6 +243,7 @@ float nullval = 0;
 float * data = new float[ naxis1 ];
 int anynull;
 
+// Reading data from file corresponding to particular fiber for which we read Rlogz,RTeff, Rlogg 
 // Status Msg
 cout << "Reading Data for FID = " << iFid << endl; 
 
@@ -253,7 +271,7 @@ delete [] comment;
 // but no need as it fulfills the functionality
 //------------------------------------------------------------------
 
-// Loop for number of elements in mode
+// Loop for number of elements in mode (checking for every possible mode listed)
 for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
 {
     iCnt = 0;	// re-initialized for each wav segment
@@ -298,7 +316,7 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
     cout << "wr = [ " << arrWr[0] << " , " << arrWr[1] << " ]" << endl;
     
     // Status
-    cout << "Sampling the wavelengths that lie between ";
+    cout << "Sampling the only wavelengths that lie between ";
     cout << arrWr[0] << " and " << arrWr[1] << endl;
 
     // Sampling the wavelengths that lie between arrWr[0] and arrWr[1]
@@ -347,9 +365,7 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
     // Status
     cout << "No of observed data points: " << iElements << endl;
 
-    // Implementing the median filtering part drawing exact 
-    // analogies from IDL code as this is not exact the median filtering
-    // but normalisation using max(median(data,3))
+    // Implementing the median filtering part (Smoothing the flux)
     maxMedianFilter( fData, iElements, 3 );
 
     // Extreme initial values for DataMin and DataMax
@@ -360,12 +376,12 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
     {
         if( fData[ iCntr1 ] > fDataMax )
         {
-            fDataMax = fData[ iCntr1 ];  // finding max
+            fDataMax = fData[ iCntr1 ];  // finding max // max flux
         }
 
         if( fData[ iCntr1 ] < fDataMin )
         {
-            fDataMin = fData[ iCntr1 ];  // finding min
+            fDataMin = fData[ iCntr1 ];  // finding min // min flux
         }
     }
 
@@ -397,7 +413,8 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
         {
             if( fWavelen[ iC ] < 8480.0     ||
                 fWavelen[ iC ] > 8680.0     ||
-              ( fWavelen[ iC ] > 8510.0 && fWavelen[ iC ] < 8535.0 )||                        ( fWavelen[ iC ] > 8550.0 && fWavelen[ iC ] < 8640.0) )
+              ( fWavelen[ iC ] > 8510.0 && fWavelen[ iC ] < 8535.0 )||                        
+              ( fWavelen[ iC ] > 8550.0 && fWavelen[ iC ] < 8640.0 ) )
             {
                 arrMask[ iC ] = '\0'; //  NULL
             } 
@@ -409,7 +426,9 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
         {
             if( fWavelen[ iC ] < 5115.0     ||
                 fWavelen[ iC ] > 5285.0     ||
-              ( fWavelen[ iC ] > 5150.0 && fWavelen[ iC ] < 5160.0 )||                        ( fWavelen[ iC ] > 5195.0 && fWavelen[ iC ] < 5215.0 )||                        ( fWavelen[ iC ] > 5235.0 && fWavelen[ iC ] < 5258.0) )
+              ( fWavelen[ iC ] > 5150.0 && fWavelen[ iC ] < 5160.0 )||                        
+              ( fWavelen[ iC ] > 5195.0 && fWavelen[ iC ] < 5215.0 )||                        
+              ( fWavelen[ iC ] > 5235.0 && fWavelen[ iC ] < 5258.0) )
             {
                 arrMask[ iC ] = '\0'; // NULL
             } 
@@ -470,6 +489,8 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
         fLogz = fRlogz;      
 
         float fXi = 0;
+        
+        // Calculate fXi depending on values of fTeff,fLogg
         if( fTeff > 5250.0 && fLogg >= 3.5 ) // MS and RGB
                                              // Teff >= 5250, logg >= 3.5
         {
@@ -499,6 +520,8 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
 
         bool bError;
 		float fEps_dev[2];
+		
+		// Thereotical Spectra
         float fSx[ iElements ], fSy[ iElements ];
 
         // temporary initialisation for writing routines ahead !!! -CHANGE-
@@ -515,7 +538,7 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
 
         strUpper( strRange );
 
-        // Call to lfp :)        		
+        // Call to lfp (with thereotical spectra & values of Teff, Logg, Logz & fXi         		
 		bError = lfp( fSx, fSy, fTeff, fLogg, fLogz, fXi, fEps_dev, fGauss, fGamma, iExtrapol, strGrid, strRange, iNomessage, iCnvl, iNomc );
 		
 		if( bError || iElements== 0 ) // ' no of elements in fSy = 0 '

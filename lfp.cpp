@@ -408,19 +408,20 @@ for( int i = 0; i< iNpar-1 ; i++)
         gArray[i].i = 0;
         cout << "extrapolation (low) of " << gArray[i].def << endl;
         iExtrapol = 1;  
-    }
+    } 
+}
 
-    /*****************************************************
-    // Routine to read the grid file
-    *****************************************************/
-    //LOGIC HERE MOVED BELOW FOR SIMPLCITY TO DEBUG( JUST 1 CALL)
- 
-}  
+cout << endl << "No of Models = " << nModel << endl;
 
-string strGridFileSpecs("/home/shrikant/Desktop/MPA/Files/lf_grid4300.fits");
+ /*****************************************************
+ // Routine to read the grid file
+ *****************************************************/
+ string strGridFileSpecs("/home/shrikant/Desktop/MPA/Files/lf_grid4300.fits");
 
 // Read the grid file with specification in arguments
 readGrid( strGridFileSpecs );
+
+// The remaining logic of lfp.pro starts from here
 
 return false; // return error 
 }
