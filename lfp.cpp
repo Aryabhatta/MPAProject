@@ -430,17 +430,26 @@ readGrid( strGridFileSpecs );
 // The remaining logic of lfp.pro starts from here
 
 long nr_new = 0L;
-int iH_cnt = 0;
+int iHcnt = 0;
+
+new_start:
+iHcnt = iHcnt + 1;
+
+if( iHcnt > 6 )
+{
+	//FREE LUN
+	return true;
+}
 
 double xpar[nModel][iNpar];
 
 for( int i=0; i< nModel; i++)
 {
-	// nFac1 & nFac2 are arrays of size iNpar//TODO
-	// for time being, writing nFac1[i] & nFac2[i]
-	iIdx = (( i % nFac1[i])/nFac2[i]);
 	for( int j=0; j< iNpar; j++)
 	{
+		// nFac1 & nFac2 are arrays of size iNpar
+		iIdx = (( i % nFac1[j])/nFac2[j]);
+		
 		// setting the ith row of xpar
 		xpar[i][j] = gArray[i].min + (iIdx * gArray[i].delta); 
 	}
@@ -516,9 +525,9 @@ for(int i=0; i< iNpar2; i++)
 	
 	long gi[iNpar];
 	string strSrc("");
-	// replacing exist definition by followin
-	// TODO recheck: what's idl exist
-	if( iIdx == 0 )
+	
+	// replacing exist definition by followin	
+	if( iIdx == 0 ) // exist is to check in the byte array exist // TODO change
 	{
 		if( !iNomessage )
 		{
@@ -538,7 +547,7 @@ for(int i=0; i< iNpar2; i++)
 			strSrc = "LOGG"; 
 		}
 		
-// next1:
+next1:
 		if( nr_new == 1 )
 		{
 			strSrc = "TEFF";
@@ -563,7 +572,7 @@ for(int i=0; i< iNpar2; i++)
 			
 			if( gi[ipa] < gArray[ipa].n -2  )
 			{
-				//GOTO next2;
+				goto next2;
 			}
 			
 			if( iIdx >= nModel )
@@ -572,7 +581,7 @@ for(int i=0; i< iNpar2; i++)
 				return true;
 			}
 			
-			if( iIdx != 0)
+			if( iIdx != 0)// exist is to check in the byte array exist // TODO change
 			{
 				if( !iNomessage )
 				{
@@ -580,11 +589,11 @@ for(int i=0; i< iNpar2; i++)
 					cout << strSrc << endl;
 				}
 				
-				// GOTO nexta;
+				goto nexta;
 			}
 		}
 		
-// next2:
+next2:
 		
 		for( int u=1; u<=2; u++)
 		{
@@ -596,14 +605,15 @@ for(int i=0; i< iNpar2; i++)
 			}
 			if( gi[ipa] < 0 )
 			{
-				//GOTO next3;
+				goto next3;
 			}
 			if( iIdx >= nModel )
 			{
 				cout << endl << "iIdx GE nModel.. Aborting" << endl;
 				return true; // return error true
 			}
-			if( iIdx != 0)
+			
+			if( iIdx != 0)// exist is to check in the byte array exist // TODO change
 			{
 				if( !iNomessage )
 				{
@@ -611,15 +621,15 @@ for(int i=0; i< iNpar2; i++)
 					cout << strSrc << endl;
 				}
 				
-				// GOTO nexta;
+				goto nexta;
 			}
 		}
 
-// next3:
+next3:
 		if( nr_new == 0 )
 		{
 			nr_new = nr_new + 1;
-			// GOTO next1
+			goto next1;
 		}
 		// FREE_LUN, ut
 		// f = fltarr(dim(0))
@@ -630,10 +640,9 @@ for(int i=0; i< iNpar2; i++)
 			return bError;
 		}
 
-// nexta:
-		nr_new = nr_new + 1;
-		
-		//GOTO new_start
+nexta:
+		nr_new = nr_new + 1;		
+		goto new_start;
 		
 	} // endif
 	
@@ -662,8 +671,9 @@ for(int i=0; i< iNpar2; i++)
 
 if( iCnvl != 0 && (fExpo > 0 || fGauss > 0 || fRt > 0 || fGamma > 0 || fVsini > 0))
 {
-// Skipping the part 
-// if cnvl... since its not needed
+//	
+// Skipping the convolution part.. since its not needed
+//
 	float res = std::max( fGauss, fExpo);
 	res = std::max(res, fRt);
 	res = std::max(res, fVsini);
@@ -684,6 +694,7 @@ if( !iNomessage )
 	}
 	cout << ";";	
 }
+
 bool bError = false;
 return false; // return error // oder returning bError 
 }
