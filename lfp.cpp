@@ -20,6 +20,7 @@
 #include <vector>
 #include <sstream>
 #include <stdlib.h>
+#include <math.h>
 #include "lfp.hpp"
 #include "readGridfile.hpp"
 
@@ -421,7 +422,284 @@ cout << endl << "No of Models = " << nModel << endl;
 // Read the grid file with specification in arguments
 readGrid( strGridFileSpecs );
 
+/*
+ * BLACKBOX THAT READS THE FITS FILES AND READS THE 
+ * CORRESPONDING WAVELENGTH/FLUX
+ */
+
 // The remaining logic of lfp.pro starts from here
 
-return false; // return error 
+long nr_new = 0L;
+int iH_cnt = 0;
+
+double xpar[nModel][iNpar];
+
+for( int i=0; i< nModel; i++)
+{
+	// nFac1 & nFac2 are arrays of size iNpar//TODO
+	// for time being, writing nFac1[i] & nFac2[i]
+	iIdx = (( i % nFac1[i])/nFac2[i]);
+	for( int j=0; j< iNpar; j++)
+	{
+		// setting the ith row of xpar
+		xpar[i][j] = gArray[i].min + (iIdx * gArray[i].delta); 
+	}
 }
+
+iIdx = 0;
+for( int i=0; i< iNpar; i++)
+{
+	 iIdx += (gArray[i].i * nFac2[i]);
+}
+
+// Copying a row from gArray to p0
+double p0[iNpar];
+for( int i=0; i<iNpar; i++)
+{
+	p0[i] = xpar[iIdx][i]; //iIdx th coloumn copied
+}
+
+double dDp[iNpar];
+for( int i=0; i<iNpar; i++)
+{
+	// TODO // size of dP is iNpar?, changed to iNpar
+	dDp[i] = dP[i] - p0[i];
+}
+
+double x[2][iNpar];
+
+for(int i=0; i<iNpar; i++)
+{
+	// setting first row
+	x[1][i] = dDp[i]/gArray[i].delta;
+	
+	// setting 0th row
+	x[0][i] = 1.0 - x[1][i];
+}
+
+if( nr_new > 0 )
+{
+	if( !iNomessage)
+	{
+		cout << "printing p0" << endl;
+		for( int i=0; i<iNpar; i++)
+		{
+			cout << p0[i] << " "; 
+		}
+	}
+}
+
+int iNpar2 = pow(2,iNpar);
+
+int Lii[iNpar];
+for(int i=0; i< iNpar; i++)
+{
+	Lii[i] = (iNpar-1) - i; // REVERSE(lindgen())
+}
+
+for(int i=0; i< iNpar2; i++)
+{
+	long addx[iNpar];
+	
+	iIdx = 0;
+	for( int j=0; j<iNpar; j++)
+	{
+		addx[j] = (i % (int)pow(2,(Lii[j]+1)))/ pow(2,Lii[j]);
+		iIdx += ((gArray[j].i + addx[j]) * nFac2[j]);
+	}
+	
+	if( iIdx >= nModel )
+	{
+		cout << endl << "iIdx GE nModel.. Aborting" << endl;
+		return true;
+	}	
+	
+	long gi[iNpar];
+	string strSrc("");
+	// replacing exist definition by followin
+	// TODO recheck: what's idl exist
+	if( iIdx == 0 )
+	{
+		if( !iNomessage )
+		{
+			cout << endl << "Gridpoint missing !" << endl;
+			for( int i=0; i < iNpar; i++)
+			{
+				cout << xpar[iIdx][i] << " "; //print iIdx row
+			}				
+		}
+		
+		if( nr_new == 0L )
+		{
+			for( int j=0; j<iNpar;j++)
+			{
+				gi[j] = gArray[j].i;
+			}
+			strSrc = "LOGG"; 
+		}
+		
+// next1:
+		if( nr_new == 1 )
+		{
+			strSrc = "TEFF";
+		}
+		int ipa;
+		for(int j=0; j< iNpar; j++ )
+		{
+			if( gArray[j].def == strSrc )
+			{
+				ipa = j; //get index
+				break;
+			}
+		}
+		
+		for( int u = 1; u<=2; u++)
+		{
+			gArray[ipa].i = gi[ipa] + u; 
+			for(int j=0; j<iNpar; j++)
+			{
+				iIdx += (gArray[ipa].i * nFac2[j]);
+			}
+			
+			if( gi[ipa] < gArray[ipa].n -2  )
+			{
+				//GOTO next2;
+			}
+			
+			if( iIdx >= nModel )
+			{
+				cout << endl << "iIdx GE nModel.. Aborting" << endl;
+				return true;
+			}
+			
+			if( iIdx != 0)
+			{
+				if( !iNomessage )
+				{
+					cout << endl << "extrapolating (low) " ;
+					cout << strSrc << endl;
+				}
+				
+				// GOTO nexta;
+			}
+		}
+		
+// next2:
+		
+		for( int u=1; u<=2; u++)
+		{
+			gArray[ipa].i = gi[ipa] - u;
+			iIdx = 0;
+			for(int j=0; j<iNpar; j++)
+			{
+				iIdx += (gArray[ipa].i * nFac2[j]);
+			}
+			if( gi[ipa] < 0 )
+			{
+				//GOTO next3;
+			}
+			if( iIdx >= nModel )
+			{
+				cout << endl << "iIdx GE nModel.. Aborting" << endl;
+				return true; // return error true
+			}
+			if( iIdx != 0)
+			{
+				if( !iNomessage )
+				{
+					cout << endl << "extrapolating (up) " ;
+					cout << strSrc << endl;
+				}
+				
+				// GOTO nexta;
+			}
+		}
+
+// next3:
+		if( nr_new == 0 )
+		{
+			nr_new = nr_new + 1;
+			// GOTO next1
+		}
+		// FREE_LUN, ut
+		// f = fltarr(dim(0))
+		if( !iNomessage )
+		{
+			cout << endl << "No Spectrum !!!" << endl;
+			bool bError = true;
+			return bError;
+		}
+
+// nexta:
+		nr_new = nr_new + 1;
+		
+		//GOTO new_start
+		
+	} // endif
+	
+	// READ FROM FITS FILE
+	//y = flux( descr(iIdx));
+	
+	double dCoef[iNpar];
+	
+	for( int m=0; m< iNpar; m++)
+	{
+		dCoef[m] = 1.0D;
+		dCoef[m] = dCoef[m] * x[addx[m]][m];
+	}
+	
+	if( i == 0)
+	{
+		// f=y*coef
+	}
+	else
+	{
+		//f = f+y*coef
+	}
+} // endfor
+
+// free_lun
+
+if( iCnvl != 0 && (fExpo > 0 || fGauss > 0 || fRt > 0 || fGamma > 0 || fVsini > 0))
+{
+// Skipping the part 
+// if cnvl... since its not needed
+	float res = std::max( fGauss, fExpo);
+	res = std::max(res, fRt);
+	res = std::max(res, fVsini);
+	res = res * 0.1;
+}
+
+if( !iNomessage )
+{
+	cout << endl << strPdef << "=";
+	for( int j=0; j<iNpar; j++)
+	{
+		cout << dP[j] << " ";
+	}
+	cout << "  ";
+	for( int j=0; j<iNpar; j++)
+	{
+		cout << gArray[j].unit << " ";
+	}
+	cout << ";";	
+}
+bool bError = false;
+return false; // return error // oder returning bError 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
