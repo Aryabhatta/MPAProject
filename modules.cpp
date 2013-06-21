@@ -24,6 +24,7 @@
 
 using namespace std;
 
+
 // NOTE: IT WOULD BE A GOOD IDEA TO SEPARATE THE IDL IMPLEMENTATIONS IN DIFFERENT FILES ALTOGETHER
 
 // Implemtation of IDL poly with 2 coefficients
@@ -102,14 +103,14 @@ void integ( double * X, double * Y, int iArraySz, double * dRes )
     double z[iArraySz];
     double sum = 0.0d;
     /******************************************************
-     * As per this logic, dRes will contain only iArraySz-2 
-     * valid values, dRes[iArraySz-1] would be 0
+     * As per this logic, dRes will start from 0 for 0 & 
+     * integration of all for last element
      * ****************************************************/
 	    
     // not taking into consideration imin & imax logic
     // just perforing a simple integration'
     // code help taken from www.astro.washington + integ + idl    
-    for(int i=0; i < iArraySz-1; i++)
+    for(int i=0; i < iArraySz; i++)
     {
     	ihi = i;
     	n = ihi - ilo;

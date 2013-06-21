@@ -57,6 +57,12 @@ Read_lf_grid() /* working perfectly */
 {
 }
 
+get_rv()
+{
+	INPUT- Observed Spectrum, Thereotical spectrum, fXr[0,0]
+	OUTPUT- Radial Velocity (km/s)
+}
+
 
 
 

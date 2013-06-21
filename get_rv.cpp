@@ -15,6 +15,8 @@
 **************************************************************************/
 
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <fitsio.h>
 #include <fftw3.h>
 //#include "fftw++.h"
@@ -23,61 +25,104 @@
 using namespace std;
 //using namespace fftwpp;
 
+#define PLOT 0
+
 // Routine to calculate the radial velocity
 // copy header part from get_rv.pro
-float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, float * ThrFlux, int iThrElem, float * fXr,  int iNomessage,int iAbsolute, float fEps, int iLog)	
+float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, float * ThrFlux, int iThrElem, float * fXr,  
+		      int iNomessage,int iAbsolute, float fEps, int iLog)	
 {
     float fXrv = 0.0;
     int i  = 0;
     
-    if( fEps = 0.0 ) {     fEps = 8 * pow(10,-7);    } // Min Floating accuracy
+    cout << endl << "===================== in GETRV===================================" << endl;
+    if( fEps == 0.0 ) 
+    {     
+    	fEps = 8 * pow(10,-7);
+    	cout << "fEps" << fEps << endl;
+    } // Min Floating accuracy
     // iAbsolute is default 0
     // iNomessage is default 0
     
-    int IndexArr[ iObsElem ];
-    int iCnt = 0;
-    fXr[0] = 6457.48;// dummy
-    fXr[1] = 6500;// dummy
+//    fXr[0] = 6457.48;// dummy TODO change
+//    fXr[1] = 6500;// dummy
+    
+    float * fObsW;
+    float * fObsF;
+    float * fThrW;
+    float * fThrF;
+    int iObsSz;
+    int iThrSz;
+    
 
-    iCnt=IdlWhere( ObsWave, ">=", fXr[0], "<=", fXr[1], iObsElem, IndexArr);
-    
-    // filtered observed spectrum
-    float fObsW[ iCnt ];
-    float fObsF[ iCnt ];
-    int iObsSz = iCnt;
-    
-    for( i=0; i< iCnt; i++ )
+    if( fXr[0] != 0.00 && fXr[1]!= 0.00 )
     {
-        fObsW[i] = ObsWave[ IndexArr[i] ];
-        fObsF[i] = ObsFlux[ IndexArr[i] ];
+    	int IndexArr[ iObsElem ];
+	    int iCnt = 0;
+	    
+    	iCnt=IdlWhere( ObsWave, ">=", fXr[0], "<=", fXr[1], iObsElem, IndexArr);
+    
+    	// filtered observed spectrum
+    	fObsW = new float[ iCnt ];
+    	fObsF = new float[ iCnt ];
+    	iObsSz = iCnt;
+    
+    	for( i=0; i< iCnt; i++ )
+    	{
+    		fObsW[i] = ObsWave[ IndexArr[i] ];
+    		fObsF[i] = ObsFlux[ IndexArr[i] ];
+    	}
+    	
+        if( iThrElem != 0 ) // if thereotical flux is given
+        {
+	    	int IndexArr1[ iThrElem ];
+	    	int iCnt1 = 0;
+	    
+	    	iCnt1=IdlWhere( ThrWave, ">=", fXr[0], "<=", fXr[1], iThrElem, IndexArr1);
+	    
+	    	// filtered thereotical spectrum
+	    	fThrW = new float[ iCnt1 ];
+	    	fThrF = new float[ iCnt1 ];
+	    	iThrSz = iCnt1;
+	
+	    	for( i=0; i< iCnt1; i++ )
+	    	{	
+	    		fThrW[i] = ThrWave[ IndexArr1[i] ];
+	    		fThrF[i] = ThrFlux[ IndexArr1[i] ];
+	    	}
+        }
+    }
+    else // if fXr not declared
+    {
+    	fObsW = new float[ iObsElem ];
+    	fObsF = new float[ iObsElem ];
+    	iObsSz = iObsElem;
+    	for( i=0; i< iObsElem; i++)
+    	{
+    		fObsW[i] = ObsWave[i];
+    		fObsF[i] = ObsFlux[i];
+    	}
+    	
+    	if( iThrElem != 0 ) // if thereotical flux is given
+        {
+    		fThrW = new float[ iThrElem ];
+	    	fThrF = new float[ iThrElem ];
+	    	iThrSz = iThrElem;
+	    	for( i=0; i<iThrElem; i++)
+	    	{
+	    		fThrW[i] = ThrWave[i];
+	    		fThrF[i] = ThrFlux[i];
+	    	}
+        }
     }
     
-    int IndexArr1[ iThrElem ];
-    int iCnt1 = 0;
-    
-    iCnt1=IdlWhere( ThrWave, ">=", fXr[0], "<=", fXr[1], iThrElem, IndexArr1);
-    
-//    cout << "Xr0= " << fXr[0] << " Xr1=" << fXr[1] << " Size: " << iThrElem << endl;
-    
-    // filtered thereotical spectrum
-    float fThrW[ iCnt1 ];
-    float fThrF[ iCnt1 ];
-    int iThrSz = iCnt1;
+    	/* 
+	     * IF NO OF PARAMETERS < 2, LOAD SOLAR FLUX SPECRUM AS REFERENCE
+	     */       
 
-    for( i=0; i< iCnt1; i++ )
-    {
-//    	cout << "Index " << i << ":" << IndexArr1[i] << " ";
-        fThrW[i] = ThrWave[ IndexArr1[i] ];
-        fThrF[i] = ThrFlux[ IndexArr1[i] ];
-    }
-    
-    cout << "size 1 = " << iCnt1 << endl;
-    
-    /* IF NO OF PARAMETERS < 2, LOAD SOLAR FLUX SPECRUM AS REFERENCE
-       SOURCE FILE read_kpno MISSING
-    */
     if( iThrElem==0 )
     {
+    
 	    string strSolarFlux("/home/shrikant/Desktop/MPA/Files/solarflux.fits");
 	    
 	    cout << endl << "Loading solar flux spectrum from fits file as reference" << endl;
@@ -92,7 +137,7 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
 	    char * comment = new char [100];
 	    
 	    // Since we know the format of this file, just reading naxis1 which is
-	    // #of rows in the table
+	    // #of cols in the table
 	    fits_read_key( fptr, TINT, "NAXIS1" , &naxis1, comment, &iStatus);
 	    cout << endl << "Naxis1 = #cols = " << naxis1 << "  Comment = " << \
 	    comment<< endl;
@@ -105,22 +150,12 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
 	    fits_get_hdu_type(fptr, &hdutype, &iStatus);
 	    switch(hdutype)
 	    {
-	    case IMAGE_HDU: cout << "Image HDU " << endl; break;
-	    case ASCII_TBL: cout <<  "Ascii Table" << endl; break;
-	    case BINARY_TBL: cout << "Binary Table" << endl; break;
+	    	case IMAGE_HDU: cout << "Image HDU " << endl; break;
+	    	case ASCII_TBL: cout <<  "Ascii Table" << endl; break;
+	    	case BINARY_TBL: cout << "Binary Table" << endl; break;
 	    }
-	    
-//	    int hdunum =0;
-//	    fits_get_num_hdus(fptr, &hdunum, &iStatus );
-//	    cout << "No of HDU's:" << hdunum << endl;
-	    
-//	    long nrows = 0;
-//	    fits_get_num_rows( fptr, &nrows, &iStatus );
-//	    cout << "No of rows:" << nrows << endl;
-	    
-//	    fits_read_col( fptr, TFLOAT, 2, 1, 1, nelements, &nullval, fSolarflux, &anynull, &iStatus);
-	    
-	    //reading a small chunk of 10 elements
+    
+	    //reading a small chunk of 10 elements TODO can change
 	    int iNoData = 10;
 	    	    
 	    float fSolarflux[iNoData]; //just contains flux, wavelength to be stored in separate array
@@ -137,6 +172,18 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
 	    {
 	    	cout<< fSolarflux[i] << " ";
 	    }
+	    
+	    // Copy the flux to fThrW array
+		iThrSz = iNoData;
+		fThrW = new float[ iThrSz ];
+		fThrF = new float[ iThrSz ];
+    	for( i=0; i<iThrSz; i++)
+    	{
+    		//fThrW[i] = ThrWave[i];
+    		fThrF[i] = fSolarflux[i];
+    	}
+    	
+    	// How to calculate wavelength values here ? TODO
 
 	    fits_close_file( fptr, &iStatus );
 
@@ -146,131 +193,147 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
 	    }
 
 	    delete [] comment;
-    }
-    
+    }    
+        
     float * fConvX = 0, * fConvY = 0;
     bool bError = false;
     int iConvSz = 0;
-    
-    bError = Log_Lin_Corr(fObsW, fObsF, iObsSz, fThrW, fThrF, iThrSz, fConvX, fConvY, iConvSz);
-    
+      
+    bError = Log_Lin_Corr( fObsW, fObsF, iObsSz, fThrW, fThrF, iThrSz, fConvX, fConvY, &iConvSz);
+        
     if( bError)
     {
         cout << "Error in LOG_LIN_CORR" << endl;
         cout << "Aborting from get_rv.." << endl;
         return -1;
     }
-  
-    double dC = 0;// find out what is C -CHANGE- 
+    
 
+    double dC =299792.458;	// light velocity, km/s 
+    cout << "iCOnvSz:" << iConvSz;
+    cout << "ALL IS WELL !!" << endl;
+    
     for( i = 0; i < iConvSz; i++ )
     {
         fConvX[i] = ( exp(fConvX[i]) - 1.00 ) * dC * pow(10,-5);
+        cout << fConvX[i] << " " ;
     }
    
-    float fCoef =  0;
-    float fConvYA[ iConvSz ];
+//    float fCoef =  0;
+//    float fConvYA[ iConvSz ];
+//    
+//    float fMaxCY = IdlMax( fConvY, iConvSz);
+//    if( abs( IdlMin( fConvY, iConvSz ) ) > fMaxCY )
+//        fMaxCY = abs( IdlMin( fConvY, iConvSz ) );
+//
+//    for( i =0; i < iConvSz; i++ )
+//    {
+//        fConvYA[i] = fConvY[i] / fMaxCY;
+//    } 
+//
+//    float fTemp = IdlMax( fConvY, iConvSz );
+//
+//    fXrv = fConvX[ (int)dC ]; // corresponding to rv=cx(!C) in get_rv.cpp
+//                        // in Idl , ! is used to reference system variabbles
+//    
+//    int iSt = 1;
+//
+//    if( ! iAbsolute )
+//    {
+//        for( i = 0; i< iConvSz; i++ )
+//        {
+//            fConvY[i] = fConvYA[i];
+//        }
+//    }
+//
+//    if( iLog != -1 ) // iLog defined
+//    {
+//        fEps = pow(10,-4);
+//        int iIndex[ iConvSz ];
+//        int iCount = IdlWhere( fConvY, ">", fEps, iConvSz, iIndex );
+//
+//        if( iCount > 0 )
+//        {
+//            for( i = 0; i < iCount; i++)
+//            {
+//                fConvY[ iIndex[i]] = log10( fConvY[ iIndex[i]] ) - log10(fEps);
+//            }
+//        }
+//
+//        iCount = IdlWhere( fConvY, "<", -fEps , iConvSz, iIndex );
+//    
+//        if( iCount > 0 )
+//        {
+//            for( i = 0; i < iCount; i++ )
+//            {
+//                fConvY[ iIndex[i]] = (-1 * log10( -1* fConvY[iIndex[i]])) - \
+//                                    log10(fEps);
+//            }
+//        }
+//
+//        iCount = IdlWhere( fConvY, ">=", (-fEps), "<=", fEps, iConvSz, iIndex);
+//        
+//        if( iCount > 0 )
+//        {
+//            for( i=0; i<iCount; i++ )
+//            {
+//                fConvY[ iIndex[i] ] = 0;
+//            }
+//        }
+//    }
+//
+//    float fXe = 0, fYe = 0;
+//    // Call to EXTREMUM_B line 215, get_rv.pro  -CHANGE-
+//
+//    if( iSt == 1 )
+//    {
+//        fXrv = fXe;
+//        fCoef = fYe;        
+//    }
+//    
+//    cout << endl << "fXrv" << fXrv << endl;
+//    // delete memory allocated in Log_Lin_Corr
+//    delete [] fConvX;
+//    delete [] fConvY;
     
-    float fMaxCY = IdlMax( fConvY, iConvSz);
-    if( abs( IdlMin( fConvY, iConvSz ) ) > fMaxCY )
-        fMaxCY = abs( IdlMin( fConvY, iConvSz ) );
-
-    for( i =0; i < iConvSz; i++ )
-    {
-        fConvYA[i] = fConvY[i] / fMaxCY;
-    } 
-
-    float fTemp = IdlMax( fConvY, iConvSz );
-
-    fXrv = fConvX[ (int)dC ]; // corresponding to rv=cx(!C) in get_rv.cpp
-                        // in Idl , ! is used to reference system variabbles
-    
-    int iSt = 1;
-
-    if( ! iAbsolute )
-    {
-        for( i = 0; i< iConvSz; i++ )
-        {
-            fConvY[i] = fConvYA[i];
-        }
-    }
-
-    if( iLog != -1 ) // iLog defined
-    {
-        fEps = pow(10,-4);
-        int iIndex[ iConvSz ];
-        int iCount = IdlWhere( fConvY, ">", fEps, iConvSz, iIndex );
-
-        if( iCount > 0 )
-        {
-            for( i = 0; i < iCount; i++)
-            {
-                fConvY[ iIndex[i]] = log10( fConvY[ iIndex[i]] ) - log10(fEps);
-            }
-        }
-
-        iCount = IdlWhere( fConvY, "<", -fEps , iConvSz, iIndex );
-    
-        if( iCount > 0 )
-        {
-            for( i = 0; i < iCount; i++ )
-            {
-                fConvY[ iIndex[i]] = (-1 * log10( -1* fConvY[iIndex[i]])) - \
-                                    log10(fEps);
-            }
-        }
-
-        iCount = IdlWhere( fConvY, ">=", (-fEps), "<=", fEps, iConvSz, iIndex);
-        
-        if( iCount > 0 )
-        {
-            for( i=0; i<iCount; i++ )
-            {
-                fConvY[ iIndex[i] ] = 0;
-            }
-        }
-    }
-
-    float fXe = 0, fYe = 0;
-    // Call to EXTREMUM_B line 215, get_rv.pro  -CHANGE-
-
-    if( iSt == 1 )
-    {
-        fXrv = fXe;
-        fCoef = fYe;        
-    }
-    
-
-    // delete memory allocated in Log_Lin_Corr
-    delete [] fConvX;
-    delete [] fConvY;
+      delete [] fObsW;
+      delete [] fObsF;
+      delete [] fThrW;
+      delete [] fThrF;
 
     return fXrv;
 }
 
-
-bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave, float * fThrF, int iThrSz, float * fConvX, float * fConvY, int &iConvSz, bool bComplete, int iNomc, float eps)
+bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave, float * fThrF, int iThrSz, 
+		           float * fConvX, float * fConvY, int * iConvSz, bool bComplete, int iNomc, float eps)
 {
+	// LOG-LIN-CONVOLUTION: X -> LOG(X) -> RESAMPLING OF (LOG(X),Y) -> SCALE FOR RV-DET
+	
+	cout << "In log lin corr" << endl;
+	cout << "ObsSz: " << iObsSz << " ThrSz: " << iThrSz << endl;
+
     // defaults for bComplete, iNomc & eps set in header file
     int i =0;
     bool bError = false;
     
     // containing log of values from Observed & thereotical wavelengths
     float fObsW[iObsSz], fThrW[iThrSz];
-
+    
+    // Taking log
     for( i = 0; i < iObsSz; i++ )
         fObsW[i] = log( fObsWave[i] );
     for( i = 0; i < iThrSz; i++ )
         fThrW[i] = log( fThrWave[i] );
-
+   
     // Spectrum must have same widths
+    // Algorithm for that
     float fOW_start = fObsW[0];
     float fOW_last = fObsW[iObsSz-1];
     float fTW_start = fThrW[0];
     float fTW_last = fThrW[iThrSz-1];
-    float fOWdiff = fOW_last-fOW_start;
+    float fOWdiff = fOW_last - fOW_start;
     float fTWdiff = fTW_last - fTW_start;
-
+    
     if( fOWdiff != fTWdiff )
     {
         if(fOWdiff > fTWdiff)  
@@ -284,24 +347,37 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
             fTW_last = fTW_start + fOWdiff;
         }
     }
-
+    
     // Finding min resampling distance
-    float fRdistOW = 10000000, fRdistTW = 1000000; // max dummy values
-    for( i =1; i <= iObsSz; i++ )
-        if( fRdistOW < (fObsW[i] - fObsW[i-1]))
+    float fRdistOW = 10000000, fRdistTW = 10000000; // initial max values
+    
+    // calculate min resampling distance for observed spectra
+    for( i=1; i < iObsSz; i++ )
+    {
+        if( fRdistOW > (fObsW[i] - fObsW[i-1]))
+        {
             fRdistOW = fObsW[i] - fObsW[i-1];
+        }
+    }
 
-    for( i =1; i <= iThrSz; i++ )
-        if( fRdistTW < (fThrW[i] - fThrW[i-1]))
+    for( i=1; i < iThrSz; i++ )
+    {
+        if( fRdistTW > (fThrW[i] - fThrW[i-1]))
+        {
             fRdistTW = fThrW[i] - fThrW[i-1];
+        }
+    }
     
     float fRdist = std::max( fRdistOW, fRdistTW ) * 0.5f ;
     
     // if resampling distance < than eps, eps taken as new resampling distance
     fRdist = std::max(fRdist, eps);
+    cout << "fRdistOW:" << fRdistOW << " fRdistTW:" << fRdistTW << " max:" << fRdist << endl;
 
     long int lNrPix = abs((fOW_last - fOW_start)/fRdist) + 1L;
     long int lNrPixChk = abs((fTW_last - fTW_start)/fRdist) + 1L;
+    
+    cout << "lNrPix:" <<lNrPix << " lNrPixChk:" <<lNrPixChk << endl;
     
     if( lNrPix != lNrPixChk )
     {
@@ -309,15 +385,14 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
         cout << endl;
         if( lNrPix > lNrPixChk )
             lNrPix = lNrPixChk;
-    } 
-
-    // line 92 logic get_rv.pro, need to understand again
+    }
+    
     if( lNrPix % 2 != 1 ) // if not odd number then, make one
     {
         lNrPix += 1;
         fRdist = (fOW_last - fOW_start)/ (float) (lNrPix -1 );
     }
-
+    
     double dNX_SP[ lNrPix ];
     double dNX_RV[ lNrPix ];
 
@@ -326,34 +401,67 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
         dNX_SP[i] = i * fRdist + fOW_start;
         dNX_RV[i] = i * fRdist + fTW_start; 
     }
-
+    
     // Resampling
     // No need to compare the size of Arrays fObsW & fThrW as it is of the 
-    // same size as fObsWave & fThrWave
+    // same size as fObsWave & fThrWave // Assuming, recheck TODO
     if( iNomc == 0 )
     {
         cout << "Points for FFT: " << lNrPix << endl;
         cout << "Interpolation:" << endl;
     } 
-    //float fYArr[iObsSz], fBArr[iThrSz]; // initialising to dummy size as of now
-    float fYAarr[lNrPix], fYBarr[lNrPix];
     
+    ofstream logFile;
+    string strb4("/home/shrikant/Desktop/MPA/Log/interpolb4.log");
+    string stra4("/home/shrikant/Desktop/MPA/Log/interpola4.log");
+    if( PLOT )
+    {    
+	    logFile.open(strb4.data(),ios::out|ios::app);    
+	    for( i=0; i< iObsSz; i++)
+	    {
+	    	logFile << fThrW[i] << "\t" << fThrF[i] << endl;
+	    }
+	    logFile.close();
+	    logFile.clear();
+    }    
+    
+    float fYAarr[lNrPix], fYBarr[lNrPix];
+      
+    // calling interpolation
+    // Input - flux, log of wavelengths(input absicca), dNX_**( output absicca)
+    // Result to be stored in fY*arr
     interpol( fObsF, fObsW, iObsSz, dNX_SP, fYAarr, lNrPix );
-    interpol( fThrF, fThrW, iThrSz, dNX_SP, fYBarr, lNrPix );
+    interpol( fThrF, fThrW, iThrSz, dNX_RV, fYBarr, lNrPix );
+    
+    if( PLOT )
+    {
+	    logFile.open( stra4.data(), ios::out|ios::app);
+	    for( i=0; i< lNrPix; i++)
+	    {
+	    	logFile << dNX_RV[i] << "\t" << fYBarr[i] << endl;
+	    }
+	    logFile.close();
+	    logFile.clear();
+    }
 
     double dNY_SP[ lNrPix ];
     double dNY_RV[ lNrPix ];
     
+    // In current implementation, just copies the fYarr to dNY_SP
     FFT_Prep( dNX_SP, fYAarr, dNY_SP, lNrPix);
     FFT_Prep( dNX_RV, fYBarr, dNY_RV, lNrPix);
 
     // CORRELATION
     long lShift = lNrPix/2;
     fConvX = new float [ lNrPix ];
-    iConvSz = lNrPix;
+    *iConvSz = lNrPix;
+    
+    cout << "lShift" << lShift << endl;
 
     double dMaxNxrv = IdlMax( dNX_RV, lNrPix );
     double dTemp = (dMaxNxrv - dNX_RV[0])/2.0d + dNX_RV[0];
+    
+    cout << "dMaxNxrv:" << dMaxNxrv << " dTemp:" << dTemp << " dNX_RV[0]: " << dNX_RV[0] << endl;
 
     // ConvX
     for( i = 0; i < lNrPix; i++ )
@@ -373,6 +481,8 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
         
         integ( dNX_SP, dNY_SP, lNrPix, dMean_SP);
         integ( dNX_RV, dNY_RV, lNrPix, dMean_RV);
+        
+        cout << "First elem: " << dMean_SP[0] << " Last element:" << dMean_SP[lNrPix-1] << endl; 
         
         double dDiv1 = IdlMax( dNX_SP, lNrPix) - dNX_SP[0];
         double dDiv2 = IdlMax( dNX_RV, lNrPix) - dNX_RV[0];
@@ -435,6 +545,28 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     	dNY_SP[i] = dNY_SP[i]/ dNorm_SP;
     }
     
+    if( PLOT )
+    {
+    	string strNyrv("/home/shrikant/Desktop/MPA/Log/RV.log");
+    	string strNysp("/home/shrikant/Desktop/MPA/Log/SP.log");
+    	
+    	logFile.open(strNysp.data(), ios::out | ios::app);
+    	for( i=0; i<lNrPix; i++)
+    	{
+    		logFile << dNX_SP[i] << "\t" << dNY_SP[i] << endl;
+    	}
+    	logFile.close();
+    	logFile.clear();
+    	
+    	logFile.open(strNyrv.data(), ios::out | ios::app);
+    	for( i=0; i<lNrPix; i++)
+    	{
+    		logFile << dNX_RV[i] << "\t" << dNY_RV[i] << endl;
+    	}
+    	logFile.close();
+    	logFile.clear();
+    }
+    
     // Taking the FFTW transforms
     fftw_complex *in, *out;
     fftw_plan p;
@@ -449,7 +581,7 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     	in[i][0] = dNY_RV[i];
     }
     
-    // TODO take a Inverse Fourier Transform of NY_RV
+    // take a Inverse Fourier Transform of NY_RV
     p = fftw_plan_dft_1d( lNrPix, in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
     fftw_execute(p);
     
@@ -465,7 +597,7 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
 //    cout << endl << "Print inverse transform of dNY_RV" << endl;
 //    for( i=0; i< lNrPix; i++)
 //    {
-//    	cout << out[i] << " " ;
+//    	cout << out[i][0] << "," << out[i][1] << " " ;
 //    }
     
          

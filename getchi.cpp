@@ -610,7 +610,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         }
         
         // Printing program check test result
-        cout << endl << "********** NOTE *************** " << endl << "All is well till here !!! " << endl;
+        //cout << endl << "********** NOTE *************** " << endl << "All is well till here !!! " << endl;
 
         if( abs( fXrv ) > 1000.0 )
         {
@@ -713,7 +713,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 	    float * fRf = 0; // TODO:confusion whether to use float * fRf pr iUse_rf
 	    
 	    //dCoef = ecorr( fSx, fSy, iElements, fWavelen, fDataRy, iElements, 1, fRf,0,mask);
-	    cout << endl << "********** NOTE *************** " << endl << "All is well till here !!! " << endl;
+	    //cout << endl << "********** NOTE *************** " << endl << "All is well till here !!! " << endl;
 	    // converting double to string
 	    ss << dCoef;
 	    string strdCoef( ss.str());
@@ -724,6 +724,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 	     
 	    if( iCnt % 50 == 0 )
 	    {
+	    	cout << endl << endl ;
 	    	cout << "IterNo: " << iCnt << " Teff: " << fTeff << " Logg: " << fLogg << " Xi: " << fXi;
 	    	cout << " Gauss: " << fGauss << " Mg_eps: " << fMg_eps << " Wcen: " << strWcen ;
 	    	cout << " Coef: "  << dCoef << " Xrv: " << fXrv << endl;
