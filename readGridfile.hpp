@@ -6,6 +6,6 @@ using namespace std;
 #ifndef READGRID_H
 #define READGRID_H
 
-void readGrid( string GridFileSpecs );
+void readGrid( string GridFileSpecs , float * fWavelen, float * fFlux);
 
 #endif

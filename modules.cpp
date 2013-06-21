@@ -272,20 +272,33 @@ void gaussFold( float * fWavelen, float * fFlux, int iSize, float fSigma, int iR
 	{
 		x = i - iRadius;
 		expo = -1 * (x*x) / (fSigma*fSigma); 
-		kernel[i] = (1/ (sqrt(2*M_PI) * fSigma)) * exp(expo); 
+		kernel[i] = 2 * (1/ (sqrt(2*M_PI) * fSigma)) * exp(expo); 
+	}
+	
+	// print kernel
+	cout << "Printing Gaussian Kernel" << endl;
+	for(int i =0; i < kSize; i++)
+	{
+		cout << kernel[i] << endl;
 	}
 	
 	// temporary array to hold smoothed flux
 	float smflux[iSize];
+	for(int i=0; i< iSize;i++)
+	{
+		smflux[i] = 0.0f; // remove garbage
+	}
 	smflux[0] = fFlux[0];
 	smflux[1] = fFlux[1];
+	smflux[iSize-2] = fFlux[iSize-2];
+	smflux[iSize-1] = fFlux[iSize-1];
 	
 	// convoluting the spectrum with kernel that we have calculated
-	for( int i=2; i < iSize; i++)
+	for( int i=2; i < iSize-2; i++)
 	{
 		for(int j=0; j< kSize; j++)
 		{
-			smflux[i] = fFlux[(i-iRadius)+j] * kernel[j];
+			smflux[i] += fFlux[(i-iRadius)+j] * kernel[j];
 		}
 	}
 	

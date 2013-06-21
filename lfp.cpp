@@ -26,7 +26,8 @@
 
 using namespace std;
 
-bool lfp( float * fSx, float *fSy, float fTeff, float fLogg, float fLogz, float fXi, float fEps_dev[2], float fGauss, float fGamma, int iExtrapol, string strGrid, string strRange, int iNomessage,int iCnvl, int iNomc )
+bool lfp( float * fSx, float * fSy, float fTeff, float fLogg, float fLogz, float fXi, float fEps_dev[2], float fGauss, float fGamma, 
+		int iExtrapol, string strGrid, string strRange, int iNomessage,int iCnvl, int iNomc )
 {
 
 iNomessage = 0;
@@ -89,8 +90,8 @@ if( fEps_dev[1] == 0.0 ) { fEps_dev[1] = 0.0;                }
 string strSran[] = { "HALPHA", "MGB", "HBETA", "CAT", "HAL", "HAR"};
 
 // please never change fWcen_std !!!
-float fWcen_std[5] = { 6520.0, 5200.0, 4850.0, 4300.0, 8600.0 };
-float fWran_std[5] = { 120.0, 100.0, 150.0, 100.0, 200.0 }; 
+float fWcen_std[5] = { 6520.0, 5200.0, 4850.0, 4300.0, 8600.0 }; // Central standard wavelenths
+float fWran_std[5] = { 120.0, 100.0, 150.0, 100.0, 200.0 };     // range values around central wavelengths
 
 float fWcen[5] = { 0.0 };   // Initialising all elements to 0.0
 float fWran[5] = { 0.0 };   // Initialising all elements to 0.0
@@ -105,7 +106,7 @@ for( iCntr = 0; iCntr < 5; iCntr++ )
 
 int iIdx = 0;   
 
-// may replace expression strSran[x] with "HALPHA" // more robust -CHANGE-
+// may replace expression strSran[x] with "HALPHA" // more robust -TODO-
 if( strRange == strSran[0] )        // H_alpha
 {
     iIdx = 0;                       // corresponds to fWcen[0]
@@ -200,7 +201,7 @@ cout << "gArray.p" << " gArray.def" << " gArray.unit" << " gArray.ion" << " gArr
 
 for( int i = 0; i< gArray.size() ; i++ )
 {
-    cout<<"\t"<<gArray[i].p<<"\t"<<gArray[i].def << "\t" << gArray[i].unit << "\t" << gArray[i].ion <<"\t\t" << gArray[i].min<< "\t"<< gArray[i].delta << "\t"<<gArray[i].n<< endl;
+    cout<<gArray[i].p<<"\t"<<gArray[i].def << "\t" << gArray[i].unit << "\t" << gArray[i].ion <<"\t\t" << gArray[i].min<< "\t"<< gArray[i].delta << "\t"<<gArray[i].n<< endl;
     
 }
 
@@ -224,8 +225,8 @@ string strWave( ss.str());
 strWave = strWave.substr( 0, strWave.find_first_of('.'));
 strTrim(strWave, 2 );
 
-// specification for grid file
-strGridFile = strCnv_log + strWave + ".grid" ;
+// specification for grid file, fits for us
+strGridFile = strCnv_log + strWave + ".fits" ;
 
 cout << endl << "Interpolation within grid file:" << strGridFile << endl \
      << endl;
@@ -234,20 +235,28 @@ float fWmin = 0.0, fWmax = 0.0 ;
 int iNpar;
 long int nModel;
 
-fWmin = fWcen[iIdx] - fWran[iIdx];
+/*
+ * Calculate min wavelength & max wavelength depending on central wavelength
+ * and range around it
+ */
+fWmin = fWcen[iIdx] - fWran[iIdx]; 
 fWmax = fWcen[iIdx] + fWran[iIdx];
 
+// No of parameters
 iNpar = gArray.size();
 nModel = 1; // dnt knw why it is defined Long in .pro
 
 iIdx = 0;
 int iNoElements = 0;
+
+// Parameter definition
 string strPdef[ gArray.size() ];// for copying gArray.def here (except elements)
 
 for( int i = 0; i < gArray.size(); i++ )
 {
     if( gArray[i].def == "ABUND" )
     {
+    	// if 'ABUND', get the element no
         strPdef[i].append( elements[gArray[i].ion] );
     }
     else
@@ -259,6 +268,7 @@ for( int i = 0; i < gArray.size(); i++ )
 long int nFac1[ iNpar ];
 long int nFac2[ iNpar ];
 
+// Initialising to 1
 for( int i = 0; i< iNpar; i++ )
 {
     nFac1[ i ] = 1;
@@ -300,7 +310,7 @@ for( int i = 0; i< iNpar-1 ; i++)
         if( fEps_dev[0] != 0 )
         {
             // lindgen intricacies
-            long int lindgenArr [iSizefEps/2] ; // declaring size of array
+            long int lindgenArr [iSizefEps/2] ; // declaring size of array // evaluates to 1, since iSizeofEps=2
             int k = 0;
             for( k =0; k < (iSizefEps/2); k++ )
             {
@@ -309,7 +319,7 @@ for( int i = 0; i< iNpar-1 ; i++)
             string elems[k];
             for( int l=0; l<k; l++ )
             {
-                elems[l] = elements[ int ( fEps_dev[ 2 * lindgenArr[l]])];
+                elems[l] = elements[ int ( fEps_dev[ 2 * lindgenArr[l]])]; // accesses elements[0]//'Mg'
             } // logic will never give OutofBound array exception
               // explicit type casting for array subscript
 
@@ -322,7 +332,7 @@ for( int i = 0; i< iNpar-1 ; i++)
                     iCntr ++;
                     if( iCntr == 1 )
                     {
-                        iIdx = m;
+                        iIdx = m; // only set one time
                     }
                 } 
             }
@@ -330,6 +340,7 @@ for( int i = 0; i< iNpar-1 ; i++)
             if( iCntr == 1 )
             {
                 dP[i] = fEps_dev[2*iIdx+1];
+                cout << endl << "Calculating dP[i] depeding on fEpd_dev !!!" << endl;
             }
         }
     } // end of else
@@ -348,7 +359,6 @@ for( int i = 0; i< iNpar-1 ; i++)
     }
     
     // mp
-    // ------ where intricacies ------
     int iCnt1 = 0; // no of elements satisfying condition
     for( int k =0; k < iSizelArray; k++ )
     {
@@ -363,7 +373,7 @@ for( int i = 0; i< iNpar-1 ; i++)
 
     for( int k =0; k< iSizelArray; k++ )
     {
-        if( fV[k] < dP[i] )
+        if( fV[k] < dP[i] ) // Redundant logic , can change TODO
         {
             iMp[iCntr] = k;
             iCntr ++;
@@ -371,27 +381,11 @@ for( int i = 0; i< iNpar-1 ; i++)
     }
 
     int iSizeMp = iCntr;
-    // ------------ end of where ---------------------------
-
-/*    cout << endl << "dP[i]=" << dP[i] << endl << "fV[k] " << endl;
-    for( int k = 0; k < iSizelArray ; k++ )
-    {
-        cout << fV[k] << " ";
-    }
-
-    cout << endl << "mp" << endl;
-    for( int k = 0; k < iSizeMp ; k++ )
-    {
-        cout << iMp[k] << "  ";
-    }
-
-    cout << endl << "Count Mp = " << iSizeMp << endl; */
-
+    
     if( iSizeMp > 0 )
     {    
         int iMpMax =0;
         iMpMax =  IdlMax <int> ( iMp, iSizeMp );
-        //  cout << "MpMax = " << iMpMax << endl << endl;
     
         if( iMpMax >= gArray[i].n -1 )
         {
@@ -414,13 +408,20 @@ for( int i = 0; i< iNpar-1 ; i++)
 
 cout << endl << "No of Models = " << nModel << endl;
 
+/*
+ * Working Perfectly till here
+ */
+
+
  /*****************************************************
  // Routine to read the grid file
  *****************************************************/
+// Temporarily pointing to file that we have, change TODO
  string strGridFileSpecs("/home/shrikant/Desktop/MPA/Files/lf_grid4300.fits");
 
 // Read the grid file with specification in arguments
-readGrid( strGridFileSpecs );
+readGrid( strGridFileSpecs , fSx, fSy );
+//readGrid( strGridFile);
 
 /*
  * BLACKBOX THAT READS THE FITS FILES AND READS THE 
@@ -441,7 +442,8 @@ if( iHcnt > 6 )
 	return true;
 }
 
-double xpar[nModel][iNpar];
+// Array to hold properties (Teff,logg,logz,Metallicity..) for all models
+double xpar[nModel][iNpar]; // can it be directly read from fits file ? TODO
 
 for( int i=0; i< nModel; i++)
 {
@@ -459,6 +461,8 @@ iIdx = 0;
 for( int i=0; i< iNpar; i++)
 {
 	 iIdx += (gArray[i].i * nFac2[i]);
+	 cout << "I:" << i << "  gArray[i].i:" << gArray[i].i << " nFac1[i]:"<< nFac1[i] 
+	 << " nFac2[i]:"<< nFac2[i] << " iIdx: " << iIdx << endl; 
 }
 
 // Copying a row from gArray to p0
@@ -466,6 +470,7 @@ double p0[iNpar];
 for( int i=0; i<iNpar; i++)
 {
 	p0[i] = xpar[iIdx][i]; //iIdx th coloumn copied
+	cout << "P0[" << i << "]: " << p0[i] << endl;
 }
 
 double dDp[iNpar];

@@ -4,14 +4,20 @@
 
 using namespace std;
 
-void readGrid( string GridFileSpecs )
+// Read the grid file & store the wavelength & flux in the arrays
+void readGrid( string GridFileSpecs, float * fWavelen, float * fFlux )
 {
 	fitsfile *fptr;
 	int iStatus = 0;    // Must initialise 'status'
 	
 	// Opening the FITS file
     fits_open_file( &fptr, GridFileSpecs.data(), READONLY, &iStatus );
-    if( iStatus ) {  fits_report_error( stderr, iStatus ); }
+    if( iStatus ) 
+    {  
+    	fits_report_error( stderr, iStatus );
+    	cout << endl << "Error with reading the file !" << "Aborting.." << endl;
+    	return;
+    }
     
     int hdunum =0;
     fits_get_num_hdus(fptr, &hdunum, &iStatus );

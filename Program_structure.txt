@@ -1,0 +1,72 @@
+
+
+- Program starts with getchi which then calls all other routines
+
+Getchi() /*works perfectly without calling any subroutines*/
+{
+	Create log file to write logs
+	Initialise #ranges that we want to work {Halpha, Mgb, CaT, Hbeta}
+	Read from "foutr1p1082f180" file to get the grid point - InputFile
+	Read from "spPlate-1962-53321.fits" file to get observations corresponding to particular FID
+	Create Wavelength array & read the flux corresponding to it
+	
+	For Every range
+	{
+		Initialise the variables- strRange, strWcen, arrWr[0 & 1] (endpoints of range), arrWrx[2]= arrWr[2]
+		Chop off the flux & wavelength data corresponding to range we're working on
+		Create a mask array 'arrMask' & set the masks corres to wavelengths we're not using to NULL
+		
+		For every point in InputFIle "foutr1p1082f180"
+		{
+			Set variables fRlogz, fRteff, fRlogg
+			Calculate fXi depending on values of fTeff,fLogg
+			Set var fMg_eps
+			* Call to 'LFP' *
+			Get the max value of thereotical Flux
+			Convolute the Flux with gaussFold
+			* Call to 'GET_RV' to get initial estimate of radial velocity *
+			Check if absolute radial velocity > 1000
+			* Rescale continnum - call to 'CONT_RSCL' *
+			Final estimate of radial velocity
+			* Second call to 'GET_RV' *
+			Add the radial velocities
+			* Call to 'ECORR' *
+			Analyse the correlation coefficient received from ECORR
+			For every 50 points, print the status msg abt IterNo, teff, logg, logz, Mg_eps, Wcen, Coef, Xrv,   
+		}		
+	}	
+}
+
+lfp()
+{
+	Print message that it performs interpolation within precomputed grid of synthetic spectra
+	Set defaults for all variables if the values are not available
+	Set standard Wcen
+	Define index 'iIdx' according to range & Wcen ( which range belongs to which Wcen index )
+	Read corresponding .def file ( Wcen important to read corresponding .def file, wavelength value appended from Wcen index )
+	* call to 'READ_LF_GRID' *
+	Printing message 'Interpolation within .grid file where name's determined by same value of Wcen Index', for us replaced by fits file
+	Calculate min wavelength & max wavelength depending on central wavelength and range around it
+	Construct string for parameter definition, which stores the element no if the definition is 'ABUND'
+	Logic to compute nModels & determine extrapolation( up/low) of particular definition, gArray(i).pdef
+	* call to readGridFile *, reads the thereotical spectrum that we have in .fits file
+	Logic for interpolation	--expand-- TODO
+}
+
+Read_lf_grid() /* working perfectly */
+{
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

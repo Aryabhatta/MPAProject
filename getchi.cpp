@@ -47,7 +47,7 @@ OUTPUT
 int main(int iArgCnt, char * pArg[])
 {
 
-int 	iFid  = 500; // Sample, actual value would be from pArg[2] -CHANGE-
+int 	iFid  = 500; // Sample, actual value would be from pArg[2] -TODO-
 int	    iConv = 1;
 int 	iNomc = 0;
 
@@ -69,7 +69,7 @@ string strSpobs( "/afs/mps/project/stellar/mbergema/sspp/"         );
 string strLocal( "/afs/mpa/data/mbergema/SIU/spec/output1"         );
 string strSpecs( "spPlate-1960-53287.fits"                         );
 
-string strFin( "Input_File_Name" );  // set it to pArg[1] -CHANGE-
+string strFin( "Input_File_Name" );  // set it to pArg[1] -TODO-
                                      // file of grid points Rlogz, Rteff, Rlogg
 /*
  * Here in all References:
@@ -81,7 +81,7 @@ string strFin( "Input_File_Name" );  // set it to pArg[1] -CHANGE-
 string strLog( strSpecs );
 
 string strTemp( "_"    );
-strTemp.append( "500"  ); // sample fid no -CHANGE-
+strTemp.append( "500"  ); // sample fid no -TODO-
 strTemp.append( ".log" );
 
 // Creatung a name for a log file
@@ -98,17 +98,22 @@ int iUse_cont_rscl = 1;		// if continnum of observed spectrum is to
 			            	// be optimised
 
 // NOTE: not considering the 'renorm' keyword to set use_cont_rscl
-// Confirm and delete the note: getchi.pro line 45 -CHANGE-
+// Confirm and delete the note: getchi.pro line 45 -TODO-
 
 double dCCC = 299792.458;	// light velocity, km/s
 
 ofstream logFile; 	    // for log file
 ifstream inputFile; 	// for input file
 
+string strFileSpecs( "/home/shrikant/Desktop/MPA/Log/" );
+strFileSpecs.append( strLog );
+string strFileSpecsb4( "/home/shrikant/Desktop/MPA/Log/before.log" );
+string strFileSpecsa4( "/home/shrikant/Desktop/MPA/Log/after.log" );
+
 // Open file for logging
 if ( !strLog.empty() )
 {
-    // creating tempfileloc -CHANGE-
+    // creating tempfileloc -TODO-
     string strFileSpecs( "/home/shrikant/Desktop/MPA/Log/" );
     strFileSpecs.append( strLog );
 
@@ -133,7 +138,7 @@ gettimeofday( &time1, NULL );
 int iValid = 0;
 
 // Input file specification
-//string strInputFilePath = strSpdir + strFin;  -CHANGE-
+//string strInputFilePath = strSpdir + strFin;  -TODO-
 //string strInputFilePath( "/home/shrikant/Desktop/MPA/Files/SampleSpec.fits" );
 string strInputFilePath( "/home/shrikant/Desktop/MPA/Files/foutr1p1082f180" ); // sample file name
 																			// contains list of stars with Rlogz, Rteff, Rlogg
@@ -176,7 +181,7 @@ string strFitsSpec( "" );
 strFitsSpec.append( strSpobs );
 strFitsSpec.append( strSpecs );
     
-// temporary file path for FITS file -CHANGE-
+// temporary file path for FITS file TODO
 string strFitsFilePath( "/home/shrikant/Desktop/MPA/Files/spPlate-1962-53321.fits" ); // replace with strFitsSpec
 
 // Status Msg
@@ -272,7 +277,9 @@ delete [] comment;
 //------------------------------------------------------------------
 
 // Loop for number of elements in mode (checking for every possible mode listed)
-for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
+// Procedure - choosing a range & then processing it 
+//for( int iCntr = 0; iCntr < iNoModes; iCntr++ ) TODO changed to make debuggin easier
+for( int iCntr = 0; iCntr < 1; iCntr++ )
 {
     iCnt = 0;	// re-initialized for each wav segment
     iRf = 0;	// reliability function
@@ -343,6 +350,7 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
     iElements = 0;
     
     // getting relevant data by chopping unnecessary data
+    // copying only wavelength & flux that lies in the given range
     for( iCntr1 = 0; iCntr1 < naxis1; iCntr1++ )
     {
         if( fWavelengths[ iCntr1 ] > arrWr[0] &&
@@ -357,9 +365,9 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
         // since elements in fWavelengths are sorted, we can break once
         // it is greater than arrWr[1]
         if( fWavelengths[ iCntr1 ] > arrWr[1] )
-            {
-                break;
-            }
+        {
+            break;
+        }
     }
 
     // Status
@@ -385,15 +393,15 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
         }
     }
 
-
     // Status
     cout << "DataMax = " << fDataMax << "\t" ;
     cout << "DataMin = " << fDataMin << endl;
 
     // create Byte array
-    // dont quite understood the motivation of creating this array -CHANGE-
+    // dont quite understood the motivation of creating this array -TODO-
     unsigned char * arrMask = new unsigned char[ iElements + 1 ];
 
+    // For every range, mask the unwanted wavelengths with NULL
     // corresponding to IF mode(m) eq 'Halpha' then begin
     if( iCntr == Halpha )
     {
@@ -434,6 +442,8 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
             } 
         }
     }
+    
+    // TODO Hbeta missing here in the above logic
 
     float fGauss = fRgauss;
     float fGamma = fRgamma;
@@ -442,18 +452,19 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
     float fRteff = 0.0 ;
     float fRlogg = 0.0 ;
 
-    // Make inputfile point to beginning of file
-
+    // Make inputfile point to beginning of file 
+    inputFile.clear();
+    inputFile.seekg(0,inputFile.beg);
 
     float fXrv = 0.0;
     float fXr[2] = { 0.0, 0.0 };
 
     // read till end of file is reached     
     while( ! inputFile.eof() )
-    {
+    {	
         string strRow;
         getline( inputFile, strRow );   
-    
+         
         // parsing the string to give float values for Rlogz, Rteff, Rlogg
         if( ! strRow.empty())
         {
@@ -521,25 +532,26 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
         bool bError;
 		float fEps_dev[2];
 		
-		// Thereotical Spectra
-        float fSx[ iElements ], fSy[ iElements ];
-
-        // temporary initialisation for writing routines ahead !!! -CHANGE-
-        for( iCntr1 = 0; iCntr1 < iElements; iCntr1 ++ )
-        {
-            fSx[ iCntr1 ] = fWavelen[ iCntr1 ];
-            fSy[ iCntr1 ] = fData[ iCntr1];
-        }
-
 		fEps_dev[0] = 12.00;
 		fEps_dev[1] = fMg_eps;
 
 		int iCnvl = 0, iExtrapol = 0;
 
         strUpper( strRange );
+        
+        // temporary initialisation for writing routines ahead !!! -TODO-
+        // Thereotical Spectra
+        float fSx[ iElements ], fSy[ iElements ];
+        
+        // Need to change when LFP starts working perfectly
+        for( iCntr1 = 0; iCntr1 < iElements; iCntr1 ++ )
+        {
+            fSx[ iCntr1 ] = fWavelen[ iCntr1 ];
+            fSy[ iCntr1 ] = fData[ iCntr1];
+        }
 
         // Call to lfp (with thereotical spectra & values of Teff, Logg, Logz & fXi         		
-		bError = lfp( fSx, fSy, fTeff, fLogg, fLogz, fXi, fEps_dev, fGauss, fGamma, iExtrapol, strGrid, strRange, iNomessage, iCnvl, iNomc );
+		//bError = lfp( fSx, fSy, fTeff, fLogg, fLogz, fXi, fEps_dev, fGauss, fGamma, iExtrapol, strGrid, strRange, iNomessage, iCnvl, iNomc );
 		
 		if( bError || iElements== 0 ) // ' no of elements in fSy = 0 '
         {
@@ -551,7 +563,7 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
         // max value in thereotical spectrum
         float fSyMax = 0.0;
         fSyMax = IdlMax<float>( fSy, iElements);
-
+        
         int iFlag;
         if( fSyMax > fLimCont )
         {
@@ -564,18 +576,31 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
         
         if( iConv )
         {
-            gaussFold( fSx, fSy, iElements,IdlMean(arrWr,2) / fRes);             
+        	logFile.close();
+        	logFile.clear();
+        	logFile.open( strFileSpecsb4.data() , ios::out|ios::app );
+        	logFile << "Before convolution" << endl;
+        	for(iCntr1=0;iCntr1<iElements;iCntr1++)
+        	{
+        		logFile << fSx[iCntr1] << "\t" << fSy[iCntr1] << endl;
+        	}
+        	logFile.close();
+        	logFile.clear();
+        	
+            gaussFold( fSx, fSy, iElements, ( IdlMean(arrWr,2)/fRes) );
+            
+            logFile.open( strFileSpecsa4.data()  , ios::out|ios::app );
+            logFile << "After convolution" << endl;
+        	for(iCntr1=0;iCntr1<iElements;iCntr1++)
+        	{
+        		logFile << fSx[iCntr1] << "\t" << fSy[iCntr1] << endl;
+        	}
+        	logFile.close();
+        	logFile.clear();
+            logFile.open( strFileSpecs.data() , ios::out | ios::app );
+            
         }
-        
-//        //debug checking idlwhere
-//        
-//        int A[10] = {1,2,3,4,5,6,7,8,9,10};
-//        int IndAr[10];
-//        int Acount = IdlWhere(A, ">", 3, "<", 7, 10, IndAr);
-//        for(int g=0;g<10;g++)
-//        	cout<<"Ind " << g <<": " << IndAr[g]<< "\t";
-//        cout << endl << "Cnt: " << Acount;
-                
+            
         //
         //  Initial estimate of radial velocity fXrv
         //
@@ -608,16 +633,17 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
 	    //
 	    // Rescale continnum
 	    //
-	    float  * fRy = 0;
+	    float  fRy[iElements];
 	    if( iUse_cont_rscl > 0 )
 	    {
-	        fRy = cont_rscl( fWavelen, fData, fSx, fSy, iElements);        
+	        //fRy = cont_rscl( fWavelen, fData, fSx, fSy, iElements, fRy);        
 	    }
 	    else
 	    {
-	        *fRy = 1.0f; // ERROR: this only fills the first val to 1
-	        			// get size of fRy & change this implementation to 
-	        			// fill every value with 1
+	    	for( iCntr1 =0; iCntr1<iElements; i++ )
+	    	{
+	    		fRy[iCntr1] = 1.0f; 
+	    	}
 	    }
 	    
 	    //
@@ -627,25 +653,25 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
 	    
 	    // Creating temporary array to contain values of fWavelen, fData...
 	    // according to indices iii1 = iCount1 & iii2 = iCount2
-	    float tmp_fWavelen[iCount1];
-	    float tmp_fDataRy[iCount1];
-	    
-	    float tmp_fSx[iCount2];
-	    float tmp_fSy[iCount2];
-	    
-	    for( i=0; i<iCount1; i++)
-	    {
-	    	tmp_fWavelen[i] = fWavelen[iIndex1[i]];
-	    	tmp_fDataRy[i] = fData[iIndex1[i]] * fRy[iIndex1[i]];
-	    }
-	    for( i=0; i< iCount2; i++)
-	    {
-	    	tmp_fSx[i] = fSx[iIndex2[i]];
-	    	tmp_fSy[i] = fSy[iIndex2[i]];
-	    }
+//	    float tmp_fWavelen[iCount1];
+//	    float tmp_fDataRy[iCount1];
+//	    
+//	    float tmp_fSx[iCount2];
+//	    float tmp_fSy[iCount2];
+//	    
+//	    for( i=0; i<iCount1; i++)
+//	    {
+//	    	tmp_fWavelen[i] = fWavelen[iIndex1[i]];
+//	    	tmp_fDataRy[i] = fData[iIndex1[i]] * fRy[iIndex1[i]];
+//	    }
+//	    for( i=0; i< iCount2; i++)
+//	    {
+//	    	tmp_fSx[i] = fSx[iIndex2[i]];
+//	    	tmp_fSy[i] = fSy[iIndex2[i]];
+//	    }
 	    
 	    // Final estimate of Radial Velocity
-	    fXrv2 = get_rv( tmp_fWavelen, tmp_fDataRy, iCount1, tmp_fSx, tmp_fSy, iCount2, fXr, iNomessage);
+	    //fXrv2 = get_rv( tmp_fWavelen, tmp_fDataRy, iCount1, tmp_fSx, tmp_fSy, iCount2, fXr, iNomessage);
 	    
 	    if( abs( fXrv2 ) > 1000.0 )
         {
@@ -684,10 +710,10 @@ for( int iCntr = 0; iCntr < iNoModes; iCntr++ )
 	    	fDataRy[i] = fData[i] * fRy[i];
 	    }
 	    unsigned char * mask = 0;
-	    float * fRf = 0; // CHANGE:confusion whether to use float * fRf pr iUse_rf
+	    float * fRf = 0; // TODO:confusion whether to use float * fRf pr iUse_rf
 	    
-	    dCoef = ecorr( fSx, fSy, iElements, fWavelen, fDataRy, iElements, 1, fRf,0,mask);
-	    
+	    //dCoef = ecorr( fSx, fSy, iElements, fWavelen, fDataRy, iElements, 1, fRf,0,mask);
+	    cout << endl << "********** NOTE *************** " << endl << "All is well till here !!! " << endl;
 	    // converting double to string
 	    ss << dCoef;
 	    string strdCoef( ss.str());
@@ -737,6 +763,9 @@ cout << endl << "Execution time in micro sec:" << dExecTime << endl << endl;
 
 logFile.close();
 inputFile.close();
+
+//beforeFile.close();
+//afterFile.close();
 
 return 0;
 }

@@ -19,7 +19,7 @@
 
 using namespace std;
 
-float * cont_rscl( float *  fObsWave, float * fObsData, float * fThrWave, float * fThrData, int iElements, 
+float * cont_rscl( float *  fObsWave, float * fObsData, float * fThrWave, float * fThrData, int iElements, float * fRy,
 		       float * fSig, int iElemSig, float * fRf, int iElemRf, int iMessage, int iStrong, int iConst, 
 		       float fSigma, int iUpcut, float * fW_highprio, int iElemhighprio, int iIter, int iLin, int iVdop )
 {
@@ -236,12 +236,12 @@ float * cont_rscl( float *  fObsWave, float * fObsData, float * fThrWave, float 
 	// this is the array that is sent back to getchi.cpp with final values
 	// so certainly its a array
 	
-	float * fRy = 0; 
+	//float * fRy = 0; 
 	
 	// fRy is calculated from polynomial evaluation of array fX(size iElements) 
 	// fX is variable array for polynomial evaluation
 	// So, allocating space to fRy equal to elements in fX
-	fRy = new float[iElements];
+	//fRy = new float[iElements];
 	
 	while(1) // loop breaking condition below
 	{
@@ -694,7 +694,7 @@ float * cont_rscl( float *  fObsWave, float * fObsData, float * fThrWave, float 
 	
 	delete [] fT;
 	delete [] fObsD;
-	return fRy; // memory allocated to fRy cannot be freed in this program
+	return fRy; 
 }
 
 
