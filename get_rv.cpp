@@ -195,11 +195,13 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
 	    delete [] comment;
     }    
         
-    float * fConvX = 0, * fConvY = 0;
+    float * fConvX, * fConvY;
     bool bError = false;
     int iConvSz = 0;
       
-    bError = Log_Lin_Corr( fObsW, fObsF, iObsSz, fThrW, fThrF, iThrSz, fConvX, fConvY, &iConvSz);
+    // Passing fConvX & fConvY as an double pointer since memory is allocated in Log_Lin_Corr
+    // Need to pass as double pointer, no other option
+    bError = Log_Lin_Corr( fObsW, fObsF, iObsSz, fThrW, fThrF, iThrSz, &fConvX, &fConvY, &iConvSz);
         
     if( bError)
     {
@@ -216,96 +218,119 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
     for( i = 0; i < iConvSz; i++ )
     {
         fConvX[i] = ( exp(fConvX[i]) - 1.00 ) * dC * pow(10,-5);
-        cout << fConvX[i] << " " ;
+//        cout << fConvY[i] << " " ;
     }
-   
-//    float fCoef =  0;
-//    float fConvYA[ iConvSz ];
-//    
-//    float fMaxCY = IdlMax( fConvY, iConvSz);
-//    if( abs( IdlMin( fConvY, iConvSz ) ) > fMaxCY )
-//        fMaxCY = abs( IdlMin( fConvY, iConvSz ) );
-//
-//    for( i =0; i < iConvSz; i++ )
-//    {
-//        fConvYA[i] = fConvY[i] / fMaxCY;
-//    } 
-//
-//    float fTemp = IdlMax( fConvY, iConvSz );
-//
-//    fXrv = fConvX[ (int)dC ]; // corresponding to rv=cx(!C) in get_rv.cpp
-//                        // in Idl , ! is used to reference system variabbles
-//    
-//    int iSt = 1;
-//
-//    if( ! iAbsolute )
-//    {
-//        for( i = 0; i< iConvSz; i++ )
-//        {
-//            fConvY[i] = fConvYA[i];
-//        }
-//    }
-//
-//    if( iLog != -1 ) // iLog defined
-//    {
-//        fEps = pow(10,-4);
-//        int iIndex[ iConvSz ];
-//        int iCount = IdlWhere( fConvY, ">", fEps, iConvSz, iIndex );
-//
-//        if( iCount > 0 )
-//        {
-//            for( i = 0; i < iCount; i++)
-//            {
-//                fConvY[ iIndex[i]] = log10( fConvY[ iIndex[i]] ) - log10(fEps);
-//            }
-//        }
-//
-//        iCount = IdlWhere( fConvY, "<", -fEps , iConvSz, iIndex );
-//    
-//        if( iCount > 0 )
-//        {
-//            for( i = 0; i < iCount; i++ )
-//            {
-//                fConvY[ iIndex[i]] = (-1 * log10( -1* fConvY[iIndex[i]])) - \
-//                                    log10(fEps);
-//            }
-//        }
-//
-//        iCount = IdlWhere( fConvY, ">=", (-fEps), "<=", fEps, iConvSz, iIndex);
-//        
-//        if( iCount > 0 )
-//        {
-//            for( i=0; i<iCount; i++ )
-//            {
-//                fConvY[ iIndex[i] ] = 0;
-//            }
-//        }
-//    }
-//
-//    float fXe = 0, fYe = 0;
-//    // Call to EXTREMUM_B line 215, get_rv.pro  -CHANGE-
-//
-//    if( iSt == 1 )
-//    {
-//        fXrv = fXe;
-//        fCoef = fYe;        
-//    }
-//    
-//    cout << endl << "fXrv" << fXrv << endl;
-//    // delete memory allocated in Log_Lin_Corr
-//    delete [] fConvX;
-//    delete [] fConvY;
     
-      delete [] fObsW;
-      delete [] fObsF;
-      delete [] fThrW;
-      delete [] fThrF;
+//    ofstream logFile;
+//    if( PLOT )
+//    {
+//    	/*string strConv("/home/shrikant/Desktop/MPA/Log/Conv.log");
+//    	
+//    	logFile.open( strConv.data(), ios::out | ios ::app );
+//    	for( i=0; i< iConvSz; i++)
+//    	{
+//    		logFile << fConvX[i] << "\t" << fConvY[i] << endl;
+//    	}
+//    	logFile.close();
+//    	logFile.clear();*/    	
+//    }
+   
+    float fCoef =  0;
+    float fConvYA[ iConvSz ];
+    
+    float fMaxCY = IdlMax( fConvY, iConvSz);
+    cout << "fMaxCY" << fMaxCY << endl;
+
+    if( abs( IdlMin( fConvY, iConvSz ) ) > fMaxCY )
+        fMaxCY = abs( IdlMin( fConvY, iConvSz ) );
+    cout << "fMaxCY" << fMaxCY << endl;
+
+    for( i=0; i < iConvSz; i++ )
+    {
+        fConvYA[i] = fConvY[i] / fMaxCY;
+    } 
+
+    float fTemp = IdlMax( fConvY, iConvSz );
+
+    //fXrv = fConvX[ (int)dC ]; // corresponding to rv=cx(!C) in get_rv.cpp
+                        // in Idl , ! is used to reference system variabbles
+    
+    // Above Idl syntax materialises to fConvX[0], check TODO
+    fXrv = fConvX[ 0 ]; // corresponding to rv=cx(!C) in get_rv.cpp
+    
+    cout << "fXrv" << fXrv << endl;
+    
+    int iSt = 1;
+
+    if( ! iAbsolute )
+    {
+        for( i = 0; i< iConvSz; i++ )
+        {
+            fConvY[i] = fConvYA[i];
+        }
+    }
+
+    if( iLog != -1 ) // iLog defined
+    {
+        fEps = pow(10,-4);
+        int iIndex[ iConvSz ];
+        int iCount = IdlWhere( fConvY, ">", fEps, iConvSz, iIndex );
+
+        if( iCount > 0 )
+        {
+            for( i = 0; i < iCount; i++)
+            {
+                fConvY[ iIndex[i]] = log10( fConvY[ iIndex[i]] ) - log10(fEps);
+            }
+        }
+
+        iCount = IdlWhere( fConvY, "<", -fEps , iConvSz, iIndex );
+    
+        if( iCount > 0 )
+        {
+            for( i = 0; i < iCount; i++ )
+            {
+                fConvY[ iIndex[i]] = (-1 * log10( -1* fConvY[iIndex[i]])) - \
+                                    log10(fEps);
+            }
+        }
+
+        iCount = IdlWhere( fConvY, ">=", (-fEps), "<=", fEps, iConvSz, iIndex);
+        
+        if( iCount > 0 )
+        {
+            for( i=0; i<iCount; i++ )
+            {
+                fConvY[ iIndex[i] ] = 0;
+            }
+        }
+    }
+
+    float fXe = 0, fYe = 0;
+    // Call to EXTREMUM_B line 215, get_rv.pro  -CHANGE-
+    //iSt=2;
+    if( iSt == 1 )
+    {
+        fXrv = fXe;
+        fCoef = fYe;        
+    }
+    
+    cout << endl << "fXrv:" << fXrv << endl;
+    
+    // delete memory allocated in Log_Lin_Corr
+    delete [] fConvX;
+    delete [] fConvY;
+    
+    delete [] fObsW;
+	delete [] fObsF;
+	delete [] fThrW;
+	delete [] fThrF;
 
     return fXrv;
 }
 
 bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave, float * fThrF, int iThrSz, 
-		           float * fConvX, float * fConvY, int * iConvSz, bool bComplete, int iNomc, float eps)
+		           float ** fConvX, float ** fConvY, int * iConvSz, bool bComplete, int iNomc, float eps)
 {
 	// LOG-LIN-CONVOLUTION: X -> LOG(X) -> RESAMPLING OF (LOG(X),Y) -> SCALE FOR RV-DET
 	
@@ -453,7 +478,7 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
 
     // CORRELATION
     long lShift = lNrPix/2;
-    fConvX = new float [ lNrPix ];
+    *fConvX = new float [ lNrPix ];
     *iConvSz = lNrPix;
     
     cout << "lShift" << lShift << endl;
@@ -466,7 +491,8 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     // ConvX
     for( i = 0; i < lNrPix; i++ )
     {
-        fConvX[i] = dNX_SP[i] - dTemp;
+        *(*fConvX + i) = dNX_SP[i] - dTemp;
+     //   cout << *(*fConvX + i) << " ";
     }
 
     double dNorm_SP = 0.0, dNorm_RV = 0.0;
@@ -636,7 +662,7 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     fftw_destroy_plan(p2);
     
     // Now out2 contains the final transformed array which needs to be shifted & stored in ConvY
-    fConvY = new float[ lNrPix ];
+    *fConvY = new float[ lNrPix ];
     float * fConvYTemp = new float[ lNrPix];
     
     for( i=0; i< lNrPix; i++ )
@@ -656,7 +682,7 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     // Shift by lshift & store in ConvY //CIRCULAR SHIFT
     for( i=0; i<lNrPix; i++)
     {
-    	fConvY[i] = fConvYTemp[(i+lShift)%lNrPix];
+    	*(*fConvY + i) = fConvYTemp[(i+lShift)%lNrPix];
     }
     
     // deleting the memory allocated for temporary array for shifts
@@ -665,7 +691,9 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     // Update ConvY depending on ConvX
     for( i=0; i< lNrPix; i++)
     {
-    	fConvY[i] = ((fConvX[lNrPix-1]-fConvX[0])/lNrPix) * fConvY[i];
+    	*(*fConvY + i) = (( *(*fConvX + (lNrPix-1))-*(*fConvX + 0) )/lNrPix) * ( *(*fConvY + i) );
+    	//cout << *(*fConvY + i) << " ";
+    	
     }
     
     return bError;
