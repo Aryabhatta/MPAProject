@@ -27,6 +27,14 @@ using namespace std;
 
 // NOTE: IT WOULD BE A GOOD IDEA TO SEPARATE THE IDL IMPLEMENTATIONS IN DIFFERENT FILES ALTOGETHER
 
+bool keyword_set(int iNumber)
+{
+	if( iNumber != NotDefined )
+		return true;
+	else
+		return false;
+}
+
 // Implemtation of IDL poly with 2 coefficients
 void poly( float * fX, int iSizefx, float Coeff1, float Coeff2 , float * fOut)
 {
@@ -168,6 +176,7 @@ void interpol( float * Y, float * X, int iSize, double * X1 , float * Y1out, int
 	// X - Abcissa values for Y (assuming X monotonically increasing)
 	// X1 - Absicca values for Y1out
 	// Y1out- result
+	
 	int i,j;
 	float x = 0;
 	float x1, x2,y1,y2;
@@ -242,7 +251,17 @@ void interpol( float * Y, float * X, int iSize, float * X1 , float * Y1out, int 
 		
 		if( j == iSize ) //loop didn't broke 
 		{
-			Y1out[i] = -1; // invalid value, shouldn't happen
+			// check if the output abcissa == last input abcissa
+			j--; // last value
+			if( X[j] == x)
+			{
+				// Copy last Y value
+				Y1out[i] = Y[j];
+			}
+			else
+			{
+				Y1out[i] = -1; // invalid value, shouldn't happen
+			}
 		}
 		else
 		{

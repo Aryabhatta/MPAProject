@@ -1,11 +1,15 @@
 #include <iostream>
 #include <string>
+#include <fstream>
 #include "idlFuncn.hpp"
 
 using namespace std;
 
 #ifndef MODULES_H
 #define MODULES_H
+
+#define NotDefined -32766 // -32767 + 1
+#define NULLPTR 0
 
 // regular grids
 //double * integ( double * dNX_SP, double * dNY_SP ); // to pick the routine from Numerical Recipes site
@@ -29,5 +33,7 @@ void strTrim( string &strS , int iMode );
 void strUpper( string &strS );
 
 string strNexttoken( string &strS, char cDelim );
+
+bool keyword_set(int iNumber);
 
 #endif

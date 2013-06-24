@@ -636,7 +636,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 	    float  fRy[iElements];
 	    if( iUse_cont_rscl > 0 )
 	    {
-	        //fRy = cont_rscl( fWavelen, fData, fSx, fSy, iElements, fRy);        
+	        cont_rscl( fWavelen, fData, fSx, fSy, iElements, fRy);        
 	    }
 	    else
 	    {
@@ -744,7 +744,6 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
     delete [] arrMask;
 
 } // end of loop for no of modes | counter - iCntr
-
     
 // deleting arrays 'fWavelengths' and 'fData' 
 delete [] fWavelengths;

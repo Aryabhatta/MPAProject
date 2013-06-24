@@ -4,7 +4,7 @@ all: project clean
 CC = g++
 
 # Options while compiling
-CFLAGS = # -fopenmp 
+CFLAGS = -g 
 
 # Options for CFITSIO
 CFITSIO = -L. -lcfitsio -lm
