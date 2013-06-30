@@ -736,7 +736,7 @@ iterate:
 		}
 	}
 	
-	iPlot = 1;
+	iPlot = 0;
 		
 	if( iPlot == 1 )
 	{

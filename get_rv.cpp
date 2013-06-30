@@ -308,7 +308,7 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
 
     float fXe = 0, fYe = 0;
     // Call to EXTREMUM_B line 215, get_rv.pro  -CHANGE-
-    //iSt=2;
+    iSt=2;
     if( iSt == 1 )
     {
         fXrv = fXe;

@@ -399,7 +399,12 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 
     // create Byte array
     // dont quite understood the motivation of creating this array -TODO-
-    unsigned char * arrMask = new unsigned char[ iElements + 1 ];
+    unsigned char * arrMask = new unsigned char[ iElements ];
+    
+    for( iCntr1=0; iCntr1 < iElements; iCntr1++)
+    {
+    	arrMask[iCntr1] = '1';
+    }
 
     // For every range, mask the unwanted wavelengths with NULL
     // corresponding to IF mode(m) eq 'Halpha' then begin
@@ -598,7 +603,6 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         	logFile.close();
         	logFile.clear();
             logFile.open( strFileSpecs.data() , ios::out | ios::app );
-            
         }
             
         //
@@ -612,7 +616,8 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         // Printing program check test result
         //cout << endl << "********** NOTE *************** " << endl << "All is well till here !!! " << endl;
 
-        if( abs( fXrv ) > 1000.0 )
+        cout << "Radial Velocity in getchi: " << fXrv << endl;
+        if( abs( fXrv ) < 1000.0 )
         {
             double fDiv = double ( fXrv ) / dCCC  + 1.0;
             for( iCntr1 = 0; iCntr1 < iElements; iCntr1++)
@@ -624,11 +629,6 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         {
             fXrv = 0.0;
         }
-
-        int iIndex1[ iElements ], iIndex2[ iElements];
-        
-        int iCount1 = IdlWhere( fWavelen, ">=", (float) arrWrc[0], "<=", (float)arrWrc[1], iElements, iIndex1 );
-        int iCount2 = IdlWhere( fSx, ">=", (float) arrWrc[0], "<=", (float) arrWrc[1], iElements, iIndex2 );
 
 	    //
 	    // Rescale continnum
@@ -650,30 +650,35 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 	    // Final estimate of radial velocity
 	    //
 	    float fXrv2 = 0.0f;
-	    
+
+        int iIndex1[ iElements ], iIndex2[ iElements];
+        
+        int iCount1 = IdlWhere( fWavelen, ">=", (float) arrWrc[0], "<=", (float)arrWrc[1], iElements, iIndex1 );
+        int iCount2 = IdlWhere( fSx, ">=", (float) arrWrc[0], "<=", (float) arrWrc[1], iElements, iIndex2 );
+
 	    // Creating temporary array to contain values of fWavelen, fData...
 	    // according to indices iii1 = iCount1 & iii2 = iCount2
-//	    float tmp_fWavelen[iCount1];
-//	    float tmp_fDataRy[iCount1];
-//	    
-//	    float tmp_fSx[iCount2];
-//	    float tmp_fSy[iCount2];
-//	    
-//	    for( i=0; i<iCount1; i++)
-//	    {
-//	    	tmp_fWavelen[i] = fWavelen[iIndex1[i]];
-//	    	tmp_fDataRy[i] = fData[iIndex1[i]] * fRy[iIndex1[i]];
-//	    }
-//	    for( i=0; i< iCount2; i++)
-//	    {
-//	    	tmp_fSx[i] = fSx[iIndex2[i]];
-//	    	tmp_fSy[i] = fSy[iIndex2[i]];
-//	    }
+	    float tmp_fWavelen[iCount1];
+	    float tmp_fDataRy[iCount1];
+	    
+	    float tmp_fSx[iCount2];
+	    float tmp_fSy[iCount2];
+	    
+	    for( i=0; i<iCount1; i++)
+	    {
+	    	tmp_fWavelen[i] = fWavelen[iIndex1[i]];
+	    	tmp_fDataRy[i] = fData[iIndex1[i]] * fRy[iIndex1[i]];
+	    }
+	    for( i=0; i< iCount2; i++)
+	    {
+	    	tmp_fSx[i] = fSx[iIndex2[i]];
+	    	tmp_fSy[i] = fSy[iIndex2[i]];
+	    }
 	    
 	    // Final estimate of Radial Velocity
-	    //fXrv2 = get_rv( tmp_fWavelen, tmp_fDataRy, iCount1, tmp_fSx, tmp_fSy, iCount2, fXr, iNomessage);
+	    fXrv2 = get_rv( tmp_fWavelen, tmp_fDataRy, iCount1, tmp_fSx, tmp_fSy, iCount2, fXr, iNomessage);
 	    
-	    if( abs( fXrv2 ) > 1000.0 )
+	    if( abs( fXrv2 ) < 1000.0 )
         {
             double fDiv = double ( fXrv2 ) / dCCC  + 1.0;
             for( iCntr1 = 0; iCntr1 < iElements; iCntr1++)
@@ -688,6 +693,8 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 	    
 	    // Adding the velocities
 	    fXrv = fXrv + fXrv2;
+	    
+	    cout << endl << "Final estimate of radial velocity in km/s: " << fXrv << endl;
 	    
 	    // converting float to string
 	    std::ostringstream ss;
@@ -709,10 +716,23 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 	    {
 	    	fDataRy[i] = fData[i] * fRy[i];
 	    }
-	    unsigned char * mask = 0;
-	    float * fRf = 0; // TODO:confusion whether to use float * fRf pr iUse_rf
 	    
-	    //dCoef = ecorr( fSx, fSy, iElements, fWavelen, fDataRy, iElements, 1, fRf,0,mask);
+	    // Allocating memory here itself
+//	    int iMaskSz = iElements + 1;
+//	    unsigned char * mask = (BYTE * )malloc(sizeof(BYTE) * iMaskSz);
+	    
+	    float * fRf = (float *)malloc(sizeof(float) * iElements );
+	    for( i=0; i< iElements; i++)
+	    {
+	    	fRf[i] = 1.00f;
+	    }
+	    
+	    int iXsigma = 1;
+	    
+	    dCoef = ecorr( fSx, fSy, iElements, fWavelen, fDataRy, iElements, iXsigma, fRf, iElements, arrMask, iElements);
+	    
+	    delete [] fRf;
+	    
 	    //cout << endl << "********** NOTE *************** " << endl << "All is well till here !!! " << endl;
 	    // converting double to string
 	    ss << dCoef;
@@ -763,9 +783,6 @@ cout << endl << "Execution time in micro sec:" << dExecTime << endl << endl;
 
 logFile.close();
 inputFile.close();
-
-//beforeFile.close();
-//afterFile.close();
 
 return 0;
 }

@@ -18,17 +18,21 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 	// mask for evaluation of parameter specific merits, mask scales with ox !!!
 	
 	// KEYWORD SETTING
-	if( iSzrf == 0) { fRf = (float *)malloc(sizeof(float) * (iObsElem + 1) );}
-	if( iSzmask == 0 ) { mask = (BYTE * )malloc(sizeof(BYTE) * (iObsElem + 1));}
+//	if( iSzrf == 0) { fRf = (float *)malloc(sizeof(float) * (iObsElem + 1) );}
+//	if( iSzmask == 0 ) { mask = (BYTE * )malloc(sizeof(BYTE) * (iObsElem + 1));}
+	
+	// Some defualt settings
 	if( dPp == 0 ) { dPp = 5.0d; }
 	if( dPn == 0 ) { dPn = 5.0d; }
 	// iNomessage set to 0 by default
 	
+	bool delFwr = false;
 	if( fWr == 0)
 	{
+		delFwr = true;
 		fWr = (float *) malloc( sizeof(float) * 2 );
-		fWr[1] = std::max( fThrWave[0], fObsWave[0] );
-		fWr[2] = std::min( fThrWave[ iThrElem-1], fObsWave[iObsElem-1]);		
+		fWr[0] = std::max( fThrWave[0], fObsWave[0] );
+		fWr[1] = std::min( fThrWave[ iThrElem-1], fObsWave[iObsElem-1]); // was going out of bound, why the hell it did not give any error?		
 	}
 	
 	if( fSigma == 0) { fSigma = 0.02; } // 2% tolerance
@@ -36,8 +40,18 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 	//
 	// Scale consistence  ---------------------------------------------------------------------------
 	//
-	double * dMp = (double *)malloc( sizeof(double) * (iObsElem+1)); //parameter specific merits
-																	  // size of mask from original code
+	
+	// How come the size of mp defined 1 in original code ?
+	/*
+	 * Since the following statement evaluates to 1
+	 * "N_ELEMENTS(mask(0,*)"
+	 * we are declaring variable 'dMp' as double instead of an array
+	 *
+	double * dMp = (double *)malloc( sizeof(double) * (iObsElem)); // parameter specific merits
+	 															  //  size of mask from original code
+	 */
+	double * dMp = (double *)malloc( sizeof(double) * 1 );
+	 															   
 	
 	int iIndex1[iObsElem];
 	int iCount1 = IdlWhere( fObsWave, ">=", fWr[0], "<=", fWr[1], iObsElem, iIndex1 );
@@ -64,15 +78,44 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 	
 	
 	float fTyy[iCount1];
+	
 	// Interpolation
 	interpol( fThrData, fThrWave, iThrElem, fTxx, fTyy, iCount1 );
+	
+	// Plot before interpol
+	int iPlot = 0; // results okay
+	if( iPlot == 1)
+	{
+		ofstream logFile;
+		string strBefore("/home/shrikant/Desktop/MPA/Log/interpolb4Ecorr.log");
+		
+		logFile.open( strBefore.data(), ios::out | ios::app );
+		for( i=0; i < iCount1; i++ )
+		{
+			logFile << fThrWave[i] << "\t" << fThrData[i] << endl;			
+		}
+		logFile.close();
+		logFile.clear();
+		
+		string strAfter("/home/shrikant/Desktop/MPA/Log/interpola4Ecorr.log");
+		logFile.open( strAfter.data(), ios::out | ios::app );
+		for( i=0; i < iCount1; i++ )
+		{
+			logFile << fTxx[i] << "\t" << fTyy[i] << endl;			
+		}
+		logFile.close();
+		logFile.clear();
+	}
+	
 	
 	float fSigmaY = fSigma * 2; // CHANGE:Assuming that sig is not an array & why the hell is it indexed in ecorr.pro?
 	BYTE mmm[iCount1];
 	
+	cout << "Count1: " << iCount1 << endl;
+
 	for( i=0; i<iCount1; i++)
 	{
-		mmm[i] = mask[iIndex1[i]]; 
+		mmm[i] = mask[iIndex1[i]];
 	}
 	
 	float fEps = 0.001f * IdlTotal(fObsData, iObsElem) / iCount1;
@@ -92,45 +135,65 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 		}
 	}
 	
-	long lMinPoints = long( iCount1 * 0.1 );	
+	long lMinPoints = long( iCount1 * 0.1 ); 	
 	//------------------------------------------------------------------------------------------------
 	
-	float fDln_sig = fSigma / std::max( fObsData[0], fEps); // CHANGE: assuming oyy refers to first element
-														 // what the hell, oyy refers to. It is an array and not an
-														// element, Oh God !
-	// get no of nonzero elements from array mmm
-	int iMIndex[iCount1];
-	int iMcnt = 0;
-	for( i=0; i< iCount1; i++)
+	float fDln_sig[iObsElem];
+	
+	for( i=0; i < iObsElem; i++ )
 	{
-		if( mmm[i] > 0)
+		fDln_sig[i] = fSigma / std::max( fObsData[i], fEps);
+	}
+	/*
+	 * Since , the following statement always evaluates to 1, we will not enclose following
+	 * statements in for
+	 * "FOR i=0,N_ELEMENTS(mmm(0,*))-1 DO BEGIN" ( line 42, ecorr.pro )
+	 */ 
+		
+	// get no of nonzero elements from array mmm
+	int iCountNZ = 0;
+	int iIndexNZ[iCount1];
+	
+	iCountNZ = IdlWhere(mmm, ">", (unsigned char)'0', iCount1, iIndexNZ);
+	
+	if( iCountNZ < lMinPoints ) // Is it time to exit ?
+	{
+		cout << endl << "Mask 0" << endl;
+		dMp[0] = -1;
+		if( iNoMessage != 1 )
 		{
-			iMIndex[iMcnt++] = i;
+			cout << "ECORR: No of available points (" << iCountNZ << ") too small" << endl;
+			cout << "Minimum no of points" << lMinPoints << endl;
 		}
-			
 	}
 	
 	// Copying rf to phi & then operating 
-	float fPhi[(iObsElem + 1)];
-	for( i=0; i< iObsElem+1; i++)
+	float fPhi[iObsElem];
+	for( i=0; i< iObsElem; i++)
 	{
 		fPhi[i] = fRf[i];
+		cout << fPhi[i] << " ";
 	}
 	
-	int iIndex2[iObsElem+1];
-	int iCount2 = IdlWhere( fPhi, "<", 0.1f, (iObsElem+1), iIndex2 );
+	int iIndex2[iObsElem];
+	int iCount2 = IdlWhere( fPhi, "<", 0.1f, iObsElem, iIndex2 );
 	
-	if( iCount2 > 0 )
+	if( iCount2 > 0 ) // control never actually  goes here !
 	{
 		for( i=0; i<iCount2; i++)
 		{
-			fPhi[iIndex2[i]] = fSmall;
+			fPhi[iIndex2[i]] = fSmall;		
 		}
 	}
 	
-	float fPd = iXsigma * fDln_sig;
-	float fNd = iXsigma * fDln_sig;
-	
+	// fPd & fNd are arrays since fDln_sig is array
+	float fPd[iObsElem], fNd[iObsElem];
+	for( i=0; i< iObsElem; i++)
+	{
+		fPd[i] = iXsigma * fDln_sig[i];
+		fNd[i] = iXsigma * fDln_sig[i];
+	}
+/*	
 	int iPind[iMcnt]; // idxp in orig code
 	int iPcnt; // pcnt
 	
@@ -229,7 +292,12 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 		}
 	}
 	
-	delete[] fRf; // should delete ? oder?
+	if( delFwr )
+	{
+		delete [] fWr;
+	}
+*/	
+//	delete[] fRf; // should delete ? oder?
 	return dMp;
 }
 
