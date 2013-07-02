@@ -45,7 +45,7 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 	/*
 	 * Since the following statement evaluates to 1
 	 * "N_ELEMENTS(mask(0,*)"
-	 * we are declaring variable 'dMp' as double instead of an array
+	 * we are declaring variable 'dMp' as double array of size 1 i.e a double
 	 *
 	double * dMp = (double *)malloc( sizeof(double) * (iObsElem)); // parameter specific merits
 	 															  //  size of mask from original code
@@ -156,11 +156,11 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 	
 	iCountNZ = IdlWhere(mmm, ">", (unsigned char)'0', iCount1, iIndexNZ);
 	
-	if( iCountNZ < lMinPoints ) // Is it time to exit ?
+	if( iCountNZ <= lMinPoints ) // Is it time to exit ?
 	{
 		cout << endl << "Mask 0" << endl;
 		dMp[0] = -1;
-		if( iNoMessage != 1 )
+		if( iNoMessage != 0 )
 		{
 			cout << "ECORR: No of available points (" << iCountNZ << ") too small" << endl;
 			cout << "Minimum no of points" << lMinPoints << endl;
@@ -193,13 +193,13 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 		fPd[i] = iXsigma * fDln_sig[i];
 		fNd[i] = iXsigma * fDln_sig[i];
 	}
-/*	
-	int iPind[iMcnt]; // idxp in orig code
-	int iPcnt; // pcnt
+
+	int iPind[iCountNZ]; // idxp in orig code
+	int iPcnt=0; // pcnt
 	
-	for( i=0; i<iMcnt; i++)
+	for( i=0; i<iCountNZ; i++)
 	{
-		if( fDyy[iMIndex[i]] > fPd )
+		if( fDyy[iIndexNZ[i]] > fPd[iIndexNZ[i]] )
 		{
 			iPind[iPcnt++] = i;
 		}		
@@ -209,38 +209,39 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 	{
 		for( i=0; i< iPcnt; i++)
 		{
-			iPind[i] = iMIndex[iPind[i]];
+			iPind[i] = iIndexNZ[iPind[i]];
 		}
 	}
 	
-	int iNind[iCount1]; //idxn
-	int iNcnt; // ncnt
+	int iNind[iCountNZ]; //idxn
+	int iNcnt=0; // ncnt
 	
-	for( i=0; i<iCount1; i++)
+	for( i=0; i<iCountNZ; i++)
 	{
-		if( fDyy[iMIndex[i]] < (-fNd))
+		if( fDyy[iIndexNZ[i]] < (-fNd[ iIndexNZ[i] ]))
 		{
 			iNind[iNcnt++] = i;
 		}
 	}
-	
+
 	if( iNcnt > 0 )
 	{
 		for( i=0;i< iNcnt; i++)
 		{
-			iNind[i] = iMIndex[ iNind[i]]; 
+			iNind[i] = iIndexNZ[ iNind[i]];	
 		}
 	}
 	
 	float fSum = 0.0d;
-	float fds = 1.0d/ IdlTotal( fPhi, (iObsElem + 1));
+	float fds = 1.0d/ IdlTotal( fPhi, iObsElem);
+	cout << "fds: " << fds << endl;
 	
 	if( iPcnt > 0 )
 	{
 		float fTemp[iPcnt];
 		for( i=0; i<iPcnt; i++)
 		{
-			float temp = (fDyy[iPind[i]] - fPd) / fPd;
+			float temp = ( fDyy[iPind[i]] - fPd[i]) / fPd[i];
 			temp = std::min( pow( temp, dPp ), 1.00000d );  // dPp should be high
 			
 			fTemp[i] = fPhi[ iPind[i]] * temp;			
@@ -253,40 +254,26 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 		float fTemp[iNcnt];
 		for( i=0; i<iNcnt; i++)
 		{
-			float temp = (-fNd - fDyy[iNind[i]]) / fNd;
+			float temp = (-fNd[i] - fDyy[iNind[i]]) / fNd[i];
 			temp = std::min( pow( temp, dPn ), 1.00000d ); // dPn should be small
 			
 			fTemp[i] = fPhi[ iNind[i]] * temp;			
 		}
 		fSum = fSum + IdlTotal( fTemp, iNcnt );
 	}
-	
-	for( i=0; i < iCount1; i++ )
+	cout << "fSum: " << fSum << endl;
+
+	dMp[0] = fSum * fds; 
+		
+	if( iNoMessage != 0 )
 	{
-		if( iMcnt <= lMinPoints )
-		{
-			cout << endl << "Mask 0";
-			dMp[i] = -1.0d;
-			if( iNoMessage != 0 )
-			{
-				cout << endl << "ECORR: number of available points " << iMcnt << \
-				" too small. Min = " << lMinPoints << endl;
-			}
-			break;
-		}
-		
-		dMp[i] = fSum * fds; 
-		
-		if( iNoMessage != 0 )
-		{
-			cout << endl << "pcnt = " << iPcnt << ", ncnt = " << iNcnt << ", pd = " << fPd << endl;
-		}
-	}// end for
+		cout << endl << "pcnt = " << iPcnt << ", ncnt = " << iNcnt << ", pd[0] = " << fPd[0] << endl;
+	}
 	
 	if( iNoMessage != 0 )
 	{
 		cout << endl << "ECORR: " << endl;
-		for( i=0; i<(iObsElem+1) ;i++)
+		for( i=0; i<1 ;i++)
 		{
 			cout << dMp[i] << endl;
 		}
@@ -296,8 +283,7 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 	{
 		delete [] fWr;
 	}
-*/	
-//	delete[] fRf; // should delete ? oder?
+
 	return dMp;
 }
 
