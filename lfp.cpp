@@ -33,8 +33,6 @@ bool lfp( float * fSx, float * fSy, float fTeff, float fLogg, float fLogz, float
 iNomessage = 0;
 iCnvl = 0;
 
-long int lH_cnt = 0;
-
 // printing information when the program executes
 cout << endl << "Interpolation within precomputed grid of precomputed ";
 cout << "synthetic spectra." << endl;/*
@@ -178,7 +176,7 @@ else
     {
         switch( iIdx )
         {
-            case 1: strGriddef = strGrid_dir + "lf_grid5200.def";
+            case 1: strGriddef = strGrid_dir + "lf_grid4850.def";
                     break;
             default:strGriddef = strGrid_dir + "lf_grid.def";
                     break;
@@ -201,10 +199,10 @@ cout << "gArray.p" << " gArray.def" << " gArray.unit" << " gArray.ion" << " gArr
 
 for( int i = 0; i< gArray.size() ; i++ )
 {
-    cout<<gArray[i].p<<"\t"<<gArray[i].def << "\t" << gArray[i].unit << "\t" << gArray[i].ion <<"\t\t" << gArray[i].min<< "\t"<< gArray[i].delta << "\t"<<gArray[i].n<< endl;
-    
+    cout<<gArray[i].p<<"\t"<<gArray[i].def << "\t" << gArray[i].unit << "\t" << gArray[i].ion <<"\t\t" << gArray[i].min<< "\t"<< gArray[i].delta << "\t"<<gArray[i].n<< endl;    
 }
 
+cout << "All is working well till call to Read_lf_grid()" << endl;
 /* COMMENTS FROM ORIGINAL IDL FILE lfp.pro
 ; wcen may be superseded
 ; ----------------------------------------------
@@ -239,7 +237,8 @@ long int nModel;
  * Calculate min wavelength & max wavelength depending on central wavelength
  * and range around it
  */
-fWmin = fWcen[iIdx] - fWran[iIdx]; 
+
+fWmin = fWcen[iIdx] - fWran[iIdx]; //TODO, check by debugging 
 fWmax = fWcen[iIdx] + fWran[iIdx];
 
 // No of parameters
@@ -417,11 +416,11 @@ cout << endl << "No of Models = " << nModel << endl;
  // Routine to read the grid file
  *****************************************************/
 // Temporarily pointing to file that we have, change TODO
- string strGridFileSpecs("/home/shrikant/Desktop/MPA/Files/lf_grid4300.fits");
+//string strGridFileSpecs("/home/shrikant/Desktop/MPA/Files/lf_grid4300.fits");
 
 // Read the grid file with specification in arguments
-readGrid( strGridFileSpecs , fSx, fSy );
-//readGrid( strGridFile);
+//readGrid( strGridFileSpecs , fSx, fSy );
+
 
 /*
  * BLACKBOX THAT READS THE FITS FILES AND READS THE 
@@ -453,9 +452,14 @@ for( int i=0; i< nModel; i++)
 		iIdx = (( i % nFac1[j])/nFac2[j]);
 		
 		// setting the ith row of xpar
-		xpar[i][j] = gArray[i].min + (iIdx * gArray[i].delta); 
+		xpar[i][j] = gArray[j].min + (iIdx * gArray[j].delta);
+		
+		if( i==nModel-1)
+			cout << xpar[i][j] << " " ;
 	}
 }
+
+cout << endl << "Xpar array created with " << nModel << " rows & " << iNpar << " coloumns" << endl;
 
 iIdx = 0;
 for( int i=0; i< iNpar; i++)
@@ -472,7 +476,7 @@ for( int i=0; i<iNpar; i++)
 	p0[i] = xpar[iIdx][i]; //iIdx th coloumn copied
 	cout << "P0[" << i << "]: " << p0[i] << endl;
 }
-
+/*
 double dDp[iNpar];
 for( int i=0; i<iNpar; i++)
 {
@@ -699,7 +703,7 @@ if( !iNomessage )
 	}
 	cout << ";";	
 }
-
+*/
 bool bError = false;
 return false; // return error // oder returning bError 
 }

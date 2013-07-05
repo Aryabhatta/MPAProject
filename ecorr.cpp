@@ -172,7 +172,7 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 	for( i=0; i< iObsElem; i++)
 	{
 		fPhi[i] = fRf[i];
-		cout << fPhi[i] << " ";
+		//cout << fPhi[i] << " ";
 	}
 	
 	int iIndex2[iObsElem];

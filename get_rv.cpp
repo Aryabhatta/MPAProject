@@ -39,7 +39,7 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
     if( fEps == 0.0 ) 
     {     
     	fEps = 8 * pow(10,-7);
-    	cout << "fEps" << fEps << endl;
+    	cout << "fEps = " << fEps << endl;
     } // Min Floating accuracy
     // iAbsolute is default 0
     // iNomessage is default 0

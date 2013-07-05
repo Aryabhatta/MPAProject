@@ -39,7 +39,7 @@ string elements[] = { "", "H", "HE", "LI", "BE", "B", "C", "N", "O", "F", \
                       , "LU", }; // 72 ELEMENTS, 
 
 
-// Manipulating strGridDef file for testing -CHANGE-
+// Manipulating strGridDef file for testing TODO-CHANGE-
 strGridDef = "/home/shrikant/Desktop/MPA/Files/lf_grid4850.def";
 
 // Status

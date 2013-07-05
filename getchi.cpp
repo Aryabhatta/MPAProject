@@ -747,13 +747,13 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 	    	cout << endl << endl ;
 	    	cout << "IterNo: " << iCnt << " Teff: " << fTeff << " Logg: " << fLogg << " Xi: " << fXi;
 	    	cout << " Gauss: " << fGauss << " Mg_eps: " << fMg_eps << " Wcen: " << strWcen ;
-	    	cout << " Coef: "  << dCoef << " Xrv: " << fXrv << endl;
+	    	cout << " Coef: "  << dCoef[0] << " Xrv: " << fXrv << endl;
 	    }
 	    
 	    // Time has come to print to the log file.. Yay !
 	    logFile<< "Cnt: " << iCnt << " Teff: " << fTeff << " Logg: " << fLogg << " Xi: " << fXi;
 	    logFile<< " Gauss: " << fGauss << " Mg_eps: " << fMg_eps << " Wcen: " << strWcen ;
-	    logFile<< " Coef: "  << dCoef << " Xrv: " << fXrv << endl;
+	    logFile<< " Coef: "  << dCoef[0] << " Xrv: " << fXrv << endl;
 	    
 	    iCnt++;
 
