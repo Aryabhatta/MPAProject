@@ -464,8 +464,12 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
     float fXrv = 0.0;
     float fXr[2] = { 0.0, 0.0 };
 
+    // Variables for reading theoretical spectrum
+    float * fSx, * fSy;
+    int iThrElem;
+
     // read till end of file is reached     
-    while( ! inputFile.eof() )
+    while( ! inputFile.eof() ) // loop that reads no of points
     {	
         string strRow;
         getline( inputFile, strRow );   
@@ -546,19 +550,48 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         
         // temporary initialisation for writing routines ahead !!! -TODO-
         // Thereotical Spectra
-        float fSx[ iElements ], fSy[ iElements ];
+//        float fSx[ iElements ], fSy[ iElements ];
+//        
+//        // Need to change when LFP starts working perfectly
+//        for( iCntr1 = 0; iCntr1 < iElements; iCntr1 ++ )
+//        {
+//            fSx[ iCntr1 ] = fWavelen[ iCntr1 ];
+//            fSy[ iCntr1 ] = fData[ iCntr1];
+//        }
         
-        // Need to change when LFP starts working perfectly
-        for( iCntr1 = 0; iCntr1 < iElements; iCntr1 ++ )
+        // PLOT Observed Spectrum
+        int iPlot = 1;
+        if( iPlot == 1)
         {
-            fSx[ iCntr1 ] = fWavelen[ iCntr1 ];
-            fSy[ iCntr1 ] = fData[ iCntr1];
-        }
+			ofstream logFile;
+			string strObsSpectra("/home/shrikant/Desktop/MPA/Log/ObsSpectrum.log");
+			logFile.open( strObsSpectra.data(), ios::out );
+			for( int i=0; i< iElements; i++)
+			{
+				logFile << fWavelen[i] << "\t" << fData[i] << endl;
+			}
+			logFile.close();
+			logFile.clear();        	
+        }        
 
         // Call to lfp (with thereotical spectra & values of Teff, Logg, Logz & fXi         		
-		//bError = lfp( fSx, fSy, fTeff, fLogg, fLogz, fXi, fEps_dev, fGauss, fGamma, iExtrapol, strGrid, strRange, iNomessage, iCnvl, iNomc );
+		bError = lfp( &fSx, &fSy, &iThrElem, fTeff, fLogg, fLogz, fXi, fEps_dev, fGauss, fGamma, iExtrapol, strGrid, strRange, iNomessage, iCnvl, iNomc );
 		
-		if( bError || iElements== 0 ) // ' no of elements in fSy = 0 '
+		iPlot = 1;
+		if( iPlot == 1 )
+		{
+			ofstream logFile;
+			string strThrSpectra("/home/shrikant/Desktop/MPA/Log/thrSpectrum.log");
+			logFile.open( strThrSpectra.data(), ios::out );
+			for( int i=0; i< iThrElem; i++)
+			{
+				logFile << fSx[i] << "\t" << fSy[i] << endl;
+			}
+			logFile.close();
+			logFile.clear();
+		}
+		
+		if( bError || iThrElem == 0 ) // ' no of elements in fSy = 0 '
         {
             // goto NEXT iteration
             iCnt++; // iCnt initialised at starting of loop over no of modes
@@ -579,7 +612,8 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
             iFlag = 1;
         }
         
-        if( iConv )
+        iPlot = 0;
+        if( iPlot == 1 )
         {
         	logFile.close();
         	logFile.clear();
@@ -759,6 +793,8 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 
     } // end of iterations over grid points | counter - while loop
 
+    delete [] fSx;
+    delete [] fSy;
     delete [] fWavelen; //**can replace dynamic array allocation with static**
     delete [] fData;
     delete [] arrMask;

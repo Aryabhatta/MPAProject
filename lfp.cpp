@@ -23,10 +23,11 @@
 #include <math.h>
 #include "lfp.hpp"
 #include "readGridfile.hpp"
-
 using namespace std;
 
-bool lfp( float * fSx, float * fSy, float fTeff, float fLogg, float fLogz, float fXi, float fEps_dev[2], float fGauss, float fGamma, 
+#define print 0
+
+bool lfp( float ** fSx, float ** fSy, int * iThrElem, float fTeff, float fLogg, float fLogz, float fXi, float fEps_dev[2], float fGauss, float fGamma, 
 		int iExtrapol, string strGrid, string strRange, int iNomessage,int iCnvl, int iNomc )
 {
 
@@ -58,8 +59,10 @@ string elements[] = { "", "H", "HE", "LI", "BE", "B", "C", "N", "O", "F", \
                       , "LU", };
 
 // directory paths
-string strGrid_dir( "/afs/mpa/data/mbergema/SIU/mod/grid/" );
-string strGrid_dir_cnv( "/afs/mpa/data/mbergema/SIU/mod/grid/cnv/" );
+string strGrid_dir( "/home/shrikant/Desktop/MPA/Files/" );
+//string strGrid_dir( "/afs/mpa/data/mbergema/SIU/mod/grid/" );
+//string strGrid_dir_cnv( "/afs/mpa/data/mbergema/SIU/mod/grid/cnv/" );
+string strGrid_dir_cnv( "/home/shrikant/Desktop/MPA/Files/" );
 
 // Initialising uninitialiased variables
 if( strRange.empty())   {   strRange.append( "HALPHA" );    }
@@ -202,7 +205,9 @@ for( int i = 0; i< gArray.size() ; i++ )
     cout<<gArray[i].p<<"\t"<<gArray[i].def << "\t" << gArray[i].unit << "\t" << gArray[i].ion <<"\t\t" << gArray[i].min<< "\t"<< gArray[i].delta << "\t"<<gArray[i].n<< endl;    
 }
 
+if( print )
 cout << "All is working well till call to Read_lf_grid()" << endl;
+
 /* COMMENTS FROM ORIGINAL IDL FILE lfp.pro
 ; wcen may be superseded
 ; ----------------------------------------------
@@ -238,12 +243,12 @@ long int nModel;
  * and range around it
  */
 
-fWmin = fWcen[iIdx] - fWran[iIdx]; //TODO, check by debugging 
+fWmin = fWcen[iIdx] - fWran[iIdx]; //Wcen is central wavlen, Wran is range around central wavelen 
 fWmax = fWcen[iIdx] + fWran[iIdx];
 
 // No of parameters
 iNpar = gArray.size();
-nModel = 1; // dnt knw why it is defined Long in .pro
+nModel = 1; // dnt knw why it is defined Long in .pro TODO: what exactly is no of models?
 
 iIdx = 0;
 int iNoElements = 0;
@@ -280,15 +285,15 @@ double dP[ iNpar ];
 // counting no of elements in fEps_dev
 int iSizefEps = 2; // Hardcoding here, for use further
 
-for( int i = 0; i< iNpar-1 ; i++)
+for( int i = 0; i< iNpar ; i++)
 {
     nModel = nModel * gArray[ i ].n;
 
-    for ( int j = i; j < iNpar-1; j++ )
+    for ( int j = i; j < iNpar; j++ )
     {
         nFac1[ i ] = nFac1[ i ] * gArray[ j ].n;
     }
-    for( int j = i+1; j < iNpar-1; j++ )
+    for( int j = i+1; j < iNpar; j++ )
     {
         nFac2[ i ] = nFac2[ i ] * gArray[ j ].n;
     }
@@ -297,15 +302,15 @@ for( int i = 0; i< iNpar-1 ; i++)
     if      ( strPdef[i] == "TEFF"  )  { dP[i] = fTeff; } 
     else if ( strPdef[i] == "LOGG"  )  { dP[i] = fLogg; } 
     else if ( strPdef[i] == "LOGZ"  )  { dP[i] = fLogz; } 
-    else if ( strPdef[i] == "XI"    )  { dP[i] = fXi; }
+    else if ( strPdef[i] == "XI"    )  { dP[i] = fXi; 	}
     else if ( strPdef[i] == "VSINI" )  { dP[i] = fVsini; } 
     else if ( strPdef[i] == "GAUSS" )  { dP[i] = fGauss; } 
     else if ( strPdef[i] == "EXPO"  )  { dP[i] = fExpo; } 
-    else if ( strPdef[i] == "RT"    )  { dP[i] = fRt; } 
-    else if ( strPdef[i] == "GAMMA" )  { dP[i] = fGamma; } 
+    else if ( strPdef[i] == "RT"    )  { dP[i] = fRt; 	} 
+    else if ( strPdef[i] == "GAMMA" )  { dP[i] = fGamma;} 
     else
     {
-        // RECHECK THIS LOGIC, MAY BE INCONSISTENT
+        // RECHECK THIS LOGIC, MAY BE INCONSISTENT TODO
         if( fEps_dev[0] != 0 )
         {
             // lindgen intricacies
@@ -415,34 +420,72 @@ cout << endl << "No of Models = " << nModel << endl;
  /*****************************************************
  // Routine to read the grid file
  *****************************************************/
-// Temporarily pointing to file that we have, change TODO
-//string strGridFileSpecs("/home/shrikant/Desktop/MPA/Files/lf_grid4300.fits");
 
-// Read the grid file with specification in arguments
-//readGrid( strGridFileSpecs , fSx, fSy );
+// specifying the path to check if the gridFile col exists
+string strGridFileSpecs = strGrid_dir + strGridFile;
 
+bool bSucess;
+float * fWave; 
+int iWaveCnt;
+ 
+// Read Wavelengths
+bSucess = readGridWave( strGridFileSpecs, &fWave, &iWaveCnt);
 
-/*
- * BLACKBOX THAT READS THE FITS FILES AND READS THE 
- * CORRESPONDING WAVELENGTH/FLUX
- */
+// Copying to original array
+*iThrElem = iWaveCnt;
+*fSx = new float[ iWaveCnt];
+*fSy = new float[ iWaveCnt];
+
+for( int i=0; i< iWaveCnt; i++)
+{
+	*(*fSx+i) = fWave[i];
+}
+
+int iPlot=0;
+if ( iPlot == 1)
+{
+	ofstream logFile;
+	string strThrWave("/home/shrikant/Desktop/MPA/Log/thrwave.log");
+	logFile.open( strThrWave.data(), ios::out | ios::app);
+	for( int i=0; i< iWaveCnt; i++)
+	{
+		logFile << fWave[i] << endl;
+	}
+	logFile.close();
+	logFile.clear();
+}
+
+float * flux; int iFluxCnt;
+int iHdu = 3;
+int naxis1, naxis2;
+
+bSucess = readGridDim( strGridFileSpecs, iHdu, &naxis1, &naxis2 );
+cout << "Dimensions of HDU: " << iHdu << " Naxis1: " << naxis1 << " Naxis2: " << naxis2 << endl;
+
+// naxis1 = #cols = #wavelengths
+flux = new float[ naxis1 ];
+iFluxCnt = naxis1;
 
 // The remaining logic of lfp.pro starts from here
 
 long nr_new = 0L;
 int iHcnt = 0;
 
+// Label 1
 new_start:
+
 iHcnt = iHcnt + 1;
 
 if( iHcnt > 6 )
 {
-	//FREE LUN
+	//Free Memory
+	delete [] fWave;
+	delete [] flux;
 	return true;
 }
 
-// Array to hold properties (Teff,logg,logz,Metallicity..) for all models
-double xpar[nModel][iNpar]; // can it be directly read from fits file ? TODO
+// Array to hold properties (Teff,logg,logz,Microturbulence,Abundance) for all models
+double xpar[nModel][iNpar]; 
 
 for( int i=0; i< nModel; i++)
 {
@@ -454,45 +497,64 @@ for( int i=0; i< nModel; i++)
 		// setting the ith row of xpar
 		xpar[i][j] = gArray[j].min + (iIdx * gArray[j].delta);
 		
+		if( print )
 		if( i==nModel-1)
+		{	
 			cout << xpar[i][j] << " " ;
+		}
 	}
 }
 
+if( print )
 cout << endl << "Xpar array created with " << nModel << " rows & " << iNpar << " coloumns" << endl;
 
 iIdx = 0;
 for( int i=0; i< iNpar; i++)
 {
 	 iIdx += (gArray[i].i * nFac2[i]);
+	 
+	 if( print )
 	 cout << "I:" << i << "  gArray[i].i:" << gArray[i].i << " nFac1[i]:"<< nFac1[i] 
 	 << " nFac2[i]:"<< nFac2[i] << " iIdx: " << iIdx << endl; 
 }
+
+if( print )
+cout << endl << "IDX @ the end of loop: " << iIdx << endl;
 
 // Copying a row from gArray to p0
 double p0[iNpar];
 for( int i=0; i<iNpar; i++)
 {
 	p0[i] = xpar[iIdx][i]; //iIdx th coloumn copied
+	
+	if( print )
 	cout << "P0[" << i << "]: " << p0[i] << endl;
 }
-/*
+// TODO: MAY BE THIS ROW CAN DIRECTLY BE READ FROM FITS FILE EXTENSION 1 , check
+
 double dDp[iNpar];
 for( int i=0; i<iNpar; i++)
 {
 	// TODO // size of dP is iNpar?, changed to iNpar
 	dDp[i] = dP[i] - p0[i];
+	
+	if( print )
+	cout << "dP[" << i << "]: " << dP[i] << "\tdDp[" << i << "]: " << dDp[i] <<endl;
 }
 
 double x[2][iNpar];
 
 for(int i=0; i<iNpar; i++)
 {
+	x[1][i]=0;
+	x[0][i]=0;
 	// setting first row
 	x[1][i] = dDp[i]/gArray[i].delta;
 	
 	// setting 0th row
-	x[0][i] = 1.0 - x[1][i];
+	x[0][i] = 1.0d - x[1][i];
+	
+	cout << "x[1][i]: " << x[1][i] << " x[0][i]: " << x[0][i] << endl;  
 }
 
 if( nr_new > 0 )
@@ -514,8 +576,9 @@ for(int i=0; i< iNpar; i++)
 {
 	Lii[i] = (iNpar-1) - i; // REVERSE(lindgen())
 }
-
+ 
 for(int i=0; i< iNpar2; i++)
+//for(int i=0; i< 1; i++)
 {
 	long addx[iNpar];
 	
@@ -529,14 +592,16 @@ for(int i=0; i< iNpar2; i++)
 	if( iIdx >= nModel )
 	{
 		cout << endl << "iIdx GE nModel.. Aborting" << endl;
+		delete [] fWave;
+		delete [] flux;
 		return true;
 	}	
 	
 	long gi[iNpar];
 	string strSrc("");
 	
-	// replacing exist definition by followin	
-	if( iIdx == 0 ) // exist is to check in the byte array exist // TODO change
+	// replacing exist definition by followin
+	if( ! GridDescrExists(strGridFileSpecs, iIdx) ) // if there doesn;t exists the coloum iIdx
 	{
 		if( !iNomessage )
 		{
@@ -573,13 +638,15 @@ next1:
 		
 		for( int u = 1; u<=2; u++)
 		{
-			gArray[ipa].i = gi[ipa] + u; 
+			gArray[ipa].i = gi[ipa] + u;
+			iIdx = 0;
 			for(int j=0; j<iNpar; j++)
 			{
+				// changing iIdx so that it can get some valid data
 				iIdx += (gArray[ipa].i * nFac2[j]);
 			}
 			
-			if( gi[ipa] < gArray[ipa].n -2  )
+			if( gi[ipa] <= gArray[ipa].n - 2  )
 			{
 				goto next2;
 			}
@@ -587,17 +654,18 @@ next1:
 			if( iIdx >= nModel )
 			{
 				cout << endl << "iIdx GE nModel.. Aborting" << endl;
+				delete [] fWave;
+				delete [] flux;
 				return true;
 			}
 			
-			if( iIdx != 0)// exist is to check in the byte array exist // TODO change
+			if( !GridDescrExists(strGridFileSpecs, iIdx) )
 			{
 				if( !iNomessage )
 				{
 					cout << endl << "extrapolating (low) " ;
 					cout << strSrc << endl;
-				}
-				
+				}				
 				goto nexta;
 			}
 		}
@@ -619,17 +687,18 @@ next2:
 			if( iIdx >= nModel )
 			{
 				cout << endl << "iIdx GE nModel.. Aborting" << endl;
+				delete [] fWave;
+				delete [] flux;
 				return true; // return error true
 			}
 			
-			if( iIdx != 0)// exist is to check in the byte array exist // TODO change
+			if( !GridDescrExists(strGridFileSpecs, iIdx) )
 			{
 				if( !iNomessage )
 				{
 					cout << endl << "extrapolating (up) " ;
 					cout << strSrc << endl;
-				}
-				
+				}				
 				goto nexta;
 			}
 		}
@@ -640,12 +709,13 @@ next3:
 			nr_new = nr_new + 1;
 			goto next1;
 		}
-		// FREE_LUN, ut
-		// f = fltarr(dim(0))
+		
 		if( !iNomessage )
 		{
 			cout << endl << "No Spectrum !!!" << endl;
 			bool bError = true;
+			delete [] fWave;
+			delete [] flux;
 			return bError;
 		}
 
@@ -657,25 +727,72 @@ nexta:
 	
 	// READ FROM FITS FILE
 	//y = flux( descr(iIdx));
+	bSucess = readGridFlux(strGridFileSpecs, flux, iIdx);
 	
-	double dCoef[iNpar];
+	int iPlot=0 ;
+	if ( iPlot == 1)
+	{
+		ofstream logFile;
+		string strThrFlux("/home/shrikant/Desktop/MPA/Log/thrflux.log");
+		logFile.open( strThrFlux.data(), ios::out | ios::app);
+		for( int i=0; i< iFluxCnt; i++)
+		{
+			logFile << flux[i] << endl;
+		}
+		logFile.close();
+		logFile.clear();
+	}
+	
+	if( !bSucess )
+	{
+		cout << "Some error reading flux for flux no: " << iIdx << endl;
+	}
+	
+	double dCoef = 1.0d;
 	
 	for( int m=0; m< iNpar; m++)
-	{
-		dCoef[m] = 1.0D;
-		dCoef[m] = dCoef[m] * x[addx[m]][m];
+	{	
+		dCoef = dCoef * x[addx[m]][m];
+		
+		if( print )
+		cout <<  "addx[m]: " << addx[m] << endl;
+		
+		if( print )
+		cout << "dCoef: " << dCoef << " x[addx[m]][m]: " << x[addx[m]][m] << endl; 
 	}
 	
 	if( i == 0)
 	{
 		// f=y*coef
+		for( int i=0; i< iWaveCnt; i++)
+		{
+			*( *fSy + i ) = flux[i];
+		}
 	}
 	else
 	{
-		//f = f+y*coef
+		for( int i=0; i< iWaveCnt; i++)
+		{
+			*( *fSy + i ) = *( *fSy + i ) + flux[i] * dCoef;
+		}
 	}
+	
 } // endfor
 
+iPlot=0 ;
+if ( iPlot == 1)
+{
+	ofstream logFile;
+	string strThrFlux("/home/shrikant/Desktop/MPA/Log/thrflux.log");
+	logFile.open( strThrFlux.data(), ios::out | ios::app);
+	for( int i=0; i< iFluxCnt; i++)
+	{
+		logFile << *(*fSy+i) << endl;
+	}
+	logFile.close();
+	logFile.clear();
+}
+	
 // free_lun
 
 if( iCnvl != 0 && (fExpo > 0 || fGauss > 0 || fRt > 0 || fGamma > 0 || fVsini > 0))
@@ -703,7 +820,8 @@ if( !iNomessage )
 	}
 	cout << ";";	
 }
-*/
+delete [] fWave;
+delete [] flux;
 bool bError = false;
 return false; // return error // oder returning bError 
 }

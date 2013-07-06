@@ -7,7 +7,7 @@ using namespace std;
 #ifndef LFP_H
 #define LFP_H
 
-bool lfp( float * fSx, float *fSy, float fTeff, float fLogg, float fLogz, float fXi, float fEps_dev[2], float fGauss, 
+bool lfp( float ** fSx, float **fSy, int * iThrElem, float fTeff, float fLogg, float fLogz, float fXi, float fEps_dev[2], float fGauss, 
 		float fGamma, int iExtrapol, string strGrid, string strRange, int iNomessage,int iCnvl, int iNomc);
 
 #endif

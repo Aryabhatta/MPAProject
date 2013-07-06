@@ -40,7 +40,8 @@ string elements[] = { "", "H", "HE", "LI", "BE", "B", "C", "N", "O", "F", \
 
 
 // Manipulating strGridDef file for testing TODO-CHANGE-
-strGridDef = "/home/shrikant/Desktop/MPA/Files/lf_grid4850.def";
+//strGridDef = "/home/shrikant/Desktop/MPA/Files/lf_grid4850.def";
+//strGridDef = "/home/shrikant/Desktop/MPA/Files/lf_grid6520.def";
 
 // Status
 cout << "Reading from grid definition file " << strGridDef << endl;
@@ -69,6 +70,10 @@ while( ! inputFile.eof() )//EOF
 {
     // reading record from grid file
     getline( inputFile, strRec );
+    
+    // to get away with carriage return
+    if( strRec.length()==1 && strRec.substr(0,1)=="\r")
+    	continue;
 
     // tokenising the line read to find where it fits !
     if( !strRec.empty( ) && strRec.substr( 0, 1 ) != "#")
