@@ -89,7 +89,7 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 		ofstream logFile;
 		string strBefore("/home/shrikant/Desktop/MPA/Log/interpolb4Ecorr.log");
 		
-		logFile.open( strBefore.data(), ios::out | ios::app );
+		logFile.open( strBefore.data(), ios::out );
 		for( i=0; i < iCount1; i++ )
 		{
 			logFile << fThrWave[i] << "\t" << fThrData[i] << endl;			

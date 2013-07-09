@@ -8,6 +8,9 @@ using namespace std;
 
 void readGrid( string GridFileSpecs , float * fWavelen, float * fFlux);
 
+// Read flux paramaters belonging to flux #iIdx
+bool readGridParams( string strGridFileSpecs, float * pars, int iIdx);
+
 // returns true if the row belonging to iIdx exists in the grid file (FITS HDU 1)
 bool GridDescrExists( string strGridFileSpecs, int iIdx);
 

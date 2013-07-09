@@ -30,6 +30,7 @@
 #include "get_rv.hpp"
 #include "cont_rscl.hpp"
 #include "ecorr.hpp"
+#include "modules.hpp"
 
 using namespace std;
 
@@ -43,6 +44,8 @@ INPUTS
 OUTPUT
 
 -------------------------------------------------------------------------*/
+
+string ReadInput( string key );
 
 int main(int iArgCnt, char * pArg[])
 {
@@ -58,6 +61,10 @@ float 	fNumplot = 1.0;
 float	fLimCont = 1.01;	// error in spectrum interpolation
 
 int 	i = 0; // iteration counter
+
+//string temp = ReadInput( "DIR:INPUTDIR" );
+//cout << "DIR:INPUTDIR" << temp << endl;
+//return 0;
 
 enum eMode {Halpha, Mgb, CaT, Hbeta}; // any update here, pls also 
                                       // update iNoModes below
@@ -617,7 +624,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         {
         	logFile.close();
         	logFile.clear();
-        	logFile.open( strFileSpecsb4.data() , ios::out|ios::app );
+        	logFile.open( strFileSpecsb4.data() , ios::out );
         	logFile << "Before convolution" << endl;
         	for(iCntr1=0;iCntr1<iElements;iCntr1++)
         	{
@@ -628,7 +635,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         	
             gaussFold( fSx, fSy, iElements, ( IdlMean(arrWr,2)/fRes) );
             
-            logFile.open( strFileSpecsa4.data()  , ios::out|ios::app );
+            logFile.open( strFileSpecsa4.data()  , ios::out );
             logFile << "After convolution" << endl;
         	for(iCntr1=0;iCntr1<iElements;iCntr1++)
         	{
@@ -636,7 +643,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         	}
         	logFile.close();
         	logFile.clear();
-            logFile.open( strFileSpecs.data() , ios::out | ios::app );
+            logFile.open( strFileSpecs.data() , ios::out  );
         }
             
         //
@@ -824,7 +831,85 @@ return 0;
 }
 
 
+string ReadInput( string name )
+{
+	// get Current directory
+	string CurrentDir("/home/shrikant/Desktop/MPA/Files/");
+	string strInputFilePath = CurrentDir + "ProgramInputs.txt";
+	
+	ifstream inputFile; 	// for input file
 
+	// Status Msg
+	cout << "Reading program inputs  " << strInputFilePath << endl;
+
+	// Open input file
+	inputFile.open( strInputFilePath.data(), ifstream::in );
+
+	if( ! inputFile.is_open() )
+	{
+	   cout << "Wrong path to Input file !!! Aborting !!!";
+	   return 0;
+	}
+	
+	char cDelim = ':';
+	string KeySecName = strNexttoken( name, cDelim);
+	string KeyName = name;
+	string keyValue;
+	
+	strTrim( KeySecName, 2 );
+    strUpper( KeySecName );
+    
+    strTrim( KeyName, 2 );
+    strUpper( KeyName );
+	
+    string strRow;
+    bool SectionFound = false;    
+    
+	while( ! inputFile.eof() ) // loop that reads no of points
+	{	
+		getline( inputFile, strRow );
+		
+		// Ignore comments
+		if( strRow.substr(0,1) == ";" )
+			continue;
+		
+		if( !SectionFound )
+		{
+			// Goto Sections only
+			if( strRow.substr(0,1) != "#" )
+				continue;
+			
+			SectionFound = true;
+			
+			if( SectionFound )
+			{
+				// Check if this is the section we are looking for
+				string SecName = strRow.substr(1,strRow.length());
+				
+				if( SecName != KeySecName )
+				{
+					SectionFound = false;
+					continue;
+				}
+			}
+		}
+		else
+		{
+			if( strRow.substr(0,KeySecName.length()) != KeySecName )
+			{
+				continue;
+			}
+			
+			keyValue = strNexttoken( strRow, '=');
+			keyValue = strRow;
+			strTrim( keyValue,2);
+			break;
+		}
+	}
+	
+	inputFile.close();
+	return keyValue;
+}
 
 
 

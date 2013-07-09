@@ -1,0 +1,22 @@
+#ARGUMENTS
+
+#DIRECTORIES
+
+; COMMENTS
+; InputDir is path where fitsfile & gridpoints file is kept
+INPUTDIR = /home/shrikant/Desktop/MPA/Files/
+
+; Output directory is where you want to keep your results
+OUTPUTDIR = 
+
+; log directory is place you want to keep all the logs
+LOGDIR= /home/shrikant/Desktop/MPA/Log/
+
+#FILENAMES
+
+FITSFILE=spPlate-1962-53321.fits
+
+GRIDPOINTS=foutr1p1082f180
+
+GRIDFILE=
+

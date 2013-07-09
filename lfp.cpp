@@ -15,6 +15,7 @@
 **************************************************************************/
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <fstream>
 #include <vector>
@@ -202,7 +203,15 @@ cout << "gArray.p" << " gArray.def" << " gArray.unit" << " gArray.ion" << " gArr
 
 for( int i = 0; i< gArray.size() ; i++ )
 {
-    cout<<gArray[i].p<<"\t"<<gArray[i].def << "\t" << gArray[i].unit << "\t" << gArray[i].ion <<"\t\t" << gArray[i].min<< "\t"<< gArray[i].delta << "\t"<<gArray[i].n<< endl;    
+//    cout << gArray[i].p<<"\t"<<gArray[i].def << "\t" << gArray[i].unit << "\t" << gArray[i].ion <<"\t\t" << gArray[i].min<< "\t"<< gArray[i].delta << "\t"<<gArray[i].n<< endl;
+	
+	cout << setw(9) << left << gArray[i].p;
+	cout << setw(11) << left << gArray[i].def;
+	cout << setw(12) << left << gArray[i].unit; 
+	cout << setw(11) << left << gArray[i].ion;
+	cout << setw(11) << left << gArray[i].min;
+	cout << setw(13) << left << gArray[i].delta;
+	cout << setw(9) << left << gArray[i].n<< endl;
 }
 
 if( print )
@@ -436,6 +445,7 @@ bSucess = readGridWave( strGridFileSpecs, &fWave, &iWaveCnt);
 *fSx = new float[ iWaveCnt];
 *fSy = new float[ iWaveCnt];
 
+// Copy wavelengths to array which will be used in getchi
 for( int i=0; i< iWaveCnt; i++)
 {
 	*(*fSx+i) = fWave[i];
@@ -446,7 +456,7 @@ if ( iPlot == 1)
 {
 	ofstream logFile;
 	string strThrWave("/home/shrikant/Desktop/MPA/Log/thrwave.log");
-	logFile.open( strThrWave.data(), ios::out | ios::app);
+	logFile.open( strThrWave.data(), ios::out);
 	for( int i=0; i< iWaveCnt; i++)
 	{
 		logFile << fWave[i] << endl;
@@ -518,28 +528,37 @@ for( int i=0; i< iNpar; i++)
 	 << " nFac2[i]:"<< nFac2[i] << " iIdx: " << iIdx << endl; 
 }
 
-if( print )
+//if( print )
 cout << endl << "IDX @ the end of loop: " << iIdx << endl;
+
+// Redundant logic to directly read from HDU2
+bSucess = readGridDim( strGridFileSpecs, iHdu, &naxis1, &naxis2 );
+
+// naxis1 = cols, naxis2 = rows, HDU 2 = e.g. 14144 * 5 (Flux * parameters)
+float * pars = new float[naxis2]; // no of rows or params
+bSucess = readGridParams( strGridFileSpecs, pars, iIdx);
 
 // Copying a row from gArray to p0
 double p0[iNpar];
 for( int i=0; i<iNpar; i++)
 {
 	p0[i] = xpar[iIdx][i]; //iIdx th coloumn copied
+//	p0[i] = pars[i]; //Reading from HDU 2
 	
-	if( print )
+	//if( print )	
 	cout << "P0[" << i << "]: " << p0[i] << endl;
 }
-// TODO: MAY BE THIS ROW CAN DIRECTLY BE READ FROM FITS FILE EXTENSION 1 , check
 
 double dDp[iNpar];
 for( int i=0; i<iNpar; i++)
 {
-	// TODO // size of dP is iNpar?, changed to iNpar
 	dDp[i] = dP[i] - p0[i];
 	
 	if( print )
 	cout << "dP[" << i << "]: " << dP[i] << "\tdDp[" << i << "]: " << dDp[i] <<endl;
+
+	if( print )
+	cout << "dDp[" << i << "] = " << dDp[i] << endl;
 }
 
 double x[2][iNpar];
@@ -734,7 +753,7 @@ nexta:
 	{
 		ofstream logFile;
 		string strThrFlux("/home/shrikant/Desktop/MPA/Log/thrflux.log");
-		logFile.open( strThrFlux.data(), ios::out | ios::app);
+		logFile.open( strThrFlux.data(), ios::out );
 		for( int i=0; i< iFluxCnt; i++)
 		{
 			logFile << flux[i] << endl;
@@ -771,6 +790,7 @@ nexta:
 	}
 	else
 	{
+//		cout << "Dcoef: " << dCoef << endl;
 		for( int i=0; i< iWaveCnt; i++)
 		{
 			*( *fSy + i ) = *( *fSy + i ) + flux[i] * dCoef;
@@ -784,7 +804,7 @@ if ( iPlot == 1)
 {
 	ofstream logFile;
 	string strThrFlux("/home/shrikant/Desktop/MPA/Log/thrflux.log");
-	logFile.open( strThrFlux.data(), ios::out | ios::app);
+	logFile.open( strThrFlux.data(), ios::out );
 	for( int i=0; i< iFluxCnt; i++)
 	{
 		logFile << *(*fSy+i) << endl;
@@ -808,7 +828,7 @@ if( iCnvl != 0 && (fExpo > 0 || fGauss > 0 || fRt > 0 || fGamma > 0 || fVsini > 
 
 if( !iNomessage )
 {
-	cout << endl << strPdef << "=";
+	cout << endl << "strPdef" << "=";
 	for( int j=0; j<iNpar; j++)
 	{
 		cout << dP[j] << " ";
@@ -820,8 +840,11 @@ if( !iNomessage )
 	}
 	cout << ";";	
 }
+
 delete [] fWave;
 delete [] flux;
+delete [] pars;
+
 bool bError = false;
 return false; // return error // oder returning bError 
 }

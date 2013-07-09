@@ -255,7 +255,7 @@ void cont_rscl( float *  fObsWave, float * fObsData, float * fThrWave, float * f
 		string strThr("/home/shrikant/Desktop/MPA/Log/thr.log");
 		string strObs("/home/shrikant/Desktop/MPA/Log/obs.log");
 		
-		logFile.open( strThr.data(), ios::out | ios::app );
+		logFile.open( strThr.data(), ios::out );
 		for( i=0; i < iCount2; i++)
 		{
 			logFile << fThrWlog[i] << "\t" << fThrD[i] << endl;
@@ -263,7 +263,7 @@ void cont_rscl( float *  fObsWave, float * fObsData, float * fThrWave, float * f
 		logFile.close();
 		logFile.clear();
 		
-		logFile.open( strObs.data(), ios::out | ios::app );
+		logFile.open( strObs.data(), ios::out );
 		for( i=0; i < iCount2; i++)
 		{
 			logFile << fObsWlog[i] << "\t" << fT[i] << endl;
@@ -743,7 +743,7 @@ iterate:
 		ofstream logFile;
 		string strRy("/home/shrikant/Desktop/MPA/Log/ry.log");
 				
-		logFile.open( strRy.data(), ios::out | ios::app );
+		logFile.open( strRy.data(), ios::out );
 		for( i=0; i < iCount1; i++)
 		{
 			logFile << fRy[i] << endl;

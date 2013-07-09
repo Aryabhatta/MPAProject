@@ -5,6 +5,94 @@ using namespace std;
 
 #define print 0
 
+bool readGridParams( string strGridFileSpecs, float * pars, int iIdx)
+{
+	fitsfile * fptr;
+	int iStatus = 0;
+	
+	// Opening the FITS file
+    fits_open_file( &fptr, strGridFileSpecs.data(), READONLY, &iStatus );
+    if( iStatus ) 
+    {  
+    	fits_report_error( stderr, iStatus );
+    	cout << endl << "Error with reading the file !" << "Aborting.." << endl;
+    	return false;
+    }
+    
+    int hdunum =0;
+    int hdutype;
+    int naxis1,naxis2;
+    char * comment = new char [100];
+    fits_get_num_hdus(fptr, &hdunum, &iStatus );
+       
+    // confirm if the no of HDU's are 3, if not, print erro
+    if( hdunum != 3 )
+    {
+    	cout << "No of HDU's in FITS file different than 3.." << endl;
+    	cout << "Aborting from reading FITS file" << endl;
+    	fits_close_file( fptr, &iStatus );
+    	return false; // routine unsuccessful    	
+    }
+	
+   // Move to 2nd HDU - reading flux parameters for specific flux number
+   hdunum = 2;    
+   fits_movabs_hdu( fptr, hdunum, &hdutype, &iStatus );
+   fits_get_hdu_num( fptr, &hdunum );
+   
+   if( print )
+   switch(hdutype)
+   {   
+	   case IMAGE_HDU: cout << "Image HDU " << endl; break;
+	   case ASCII_TBL: cout <<  "Ascii Table" << endl; break;
+	   case BINARY_TBL: cout << "Binary Table" << endl; break;   
+   }
+   
+   // Read no of cols in the table = different wavelengths
+   fits_read_key( fptr, TINT, "NAXIS1" , &naxis1, comment, &iStatus);
+   if( print )
+   cout << endl << "Naxis1 = #cols = " << naxis1 << "  Comment = " << comment<< endl;
+   
+   // Read no of rows in the table = different fluxes
+   fits_read_key( fptr, TINT, "NAXIS2" , &naxis2, comment, &iStatus);
+   if( print )
+   cout << "Naxis2 = #rows = " << naxis2 << "  Comment = " << comment<< endl;
+   
+   // sanitise input array
+   for( int i=0; i< naxis2; i++)
+   {
+	   pars[i] = 0.00f;
+   }
+
+   int colnum = iIdx;
+   int firstrow=1;
+   // Starting from
+   long firstelem;
+   int nelements = 1;
+   float nullval = 0;
+   int anynull;
+   
+      
+   for( int i=0; i<naxis2; i++ )
+   {
+	   firstelem = iIdx + i * naxis1;
+	   fits_read_img( fptr, TFLOAT, firstelem, nelements, &nullval, (pars+i), &anynull, &iStatus);
+	   if( iStatus ) 
+	   {  
+		   fits_report_error( stderr, iStatus );
+		   cout << endl << "Error with reading the coloumn !" << "Aborting.." << endl;
+		   return false;
+	   }
+	   if( print )
+	   cout << " " << pars[i];
+   }
+   
+   // control here => data read successfully
+   
+   fits_close_file( fptr, &iStatus );
+   return true;
+	
+}
+
 bool readGridDim( string strGridFileSpecs, int iHdu,  int * naxis1,  int * naxis2 )
 {
 	fitsfile * fptr;
@@ -125,6 +213,12 @@ bool readGridFlux( string strGridFileSpecs, float * flux, int iIdx)
    fits_read_key( fptr, TINT, "NAXIS2" , &naxis2, comment, &iStatus);
    if( print )
    cout << "Naxis2 = #rows = " << naxis2 << "  Comment = " << comment<< endl;
+   
+   // Sanitise the flux array before reading into it
+   for( int i=0; i< naxis1; i++ )
+   {
+	   flux[i] = 0.00f;
+   }
    
    // therefore naxis1 = diff wave.., naxis2 = diff fluxes
       

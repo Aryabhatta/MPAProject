@@ -226,7 +226,7 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
 //    {
 //    	/*string strConv("/home/shrikant/Desktop/MPA/Log/Conv.log");
 //    	
-//    	logFile.open( strConv.data(), ios::out | ios ::app );
+//    	logFile.open( strConv.data(), ios::out );
 //    	for( i=0; i< iConvSz; i++)
 //    	{
 //    		logFile << fConvX[i] << "\t" << fConvY[i] << endl;
@@ -441,7 +441,7 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     string stra4("/home/shrikant/Desktop/MPA/Log/interpola4.log");
     if( PLOT )
     {    
-	    logFile.open(strb4.data(),ios::out|ios::app);    
+	    logFile.open(strb4.data(),ios::out);    
 	    for( i=0; i< iObsSz; i++)
 	    {
 	    	logFile << fThrW[i] << "\t" << fThrF[i] << endl;
@@ -460,7 +460,7 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     
     if( PLOT )
     {
-	    logFile.open( stra4.data(), ios::out|ios::app);
+	    logFile.open( stra4.data(), ios::out );
 	    for( i=0; i< lNrPix; i++)
 	    {
 	    	logFile << dNX_RV[i] << "\t" << fYBarr[i] << endl;
@@ -576,7 +576,7 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     	string strNyrv("/home/shrikant/Desktop/MPA/Log/RV.log");
     	string strNysp("/home/shrikant/Desktop/MPA/Log/SP.log");
     	
-    	logFile.open(strNysp.data(), ios::out | ios::app);
+    	logFile.open(strNysp.data(), ios::out );
     	for( i=0; i<lNrPix; i++)
     	{
     		logFile << dNX_SP[i] << "\t" << dNY_SP[i] << endl;
@@ -584,7 +584,7 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     	logFile.close();
     	logFile.clear();
     	
-    	logFile.open(strNyrv.data(), ios::out | ios::app);
+    	logFile.open(strNyrv.data(), ios::out );
     	for( i=0; i<lNrPix; i++)
     	{
     		logFile << dNX_RV[i] << "\t" << dNY_RV[i] << endl;
