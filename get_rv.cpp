@@ -41,6 +41,7 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
     	fEps = 8 * pow(10,-7);
     	cout << "fEps = " << fEps << endl;
     } // Min Floating accuracy
+    
     // iAbsolute is default 0
     // iNomessage is default 0
     
@@ -218,22 +219,7 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
     for( i = 0; i < iConvSz; i++ )
     {
         fConvX[i] = ( exp(fConvX[i]) - 1.00 ) * dC * pow(10,-5);
-//        cout << fConvY[i] << " " ;
     }
-    
-//    ofstream logFile;
-//    if( PLOT )
-//    {
-//    	/*string strConv("/home/shrikant/Desktop/MPA/Log/Conv.log");
-//    	
-//    	logFile.open( strConv.data(), ios::out );
-//    	for( i=0; i< iConvSz; i++)
-//    	{
-//    		logFile << fConvX[i] << "\t" << fConvY[i] << endl;
-//    	}
-//    	logFile.close();
-//    	logFile.clear();*/    	
-//    }
    
     float fCoef =  0;
     float fConvYA[ iConvSz ];

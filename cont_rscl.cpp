@@ -19,21 +19,21 @@
 
 using namespace std;
 
-void cont_rscl( float *  fObsWave, float * fObsData, float * fThrWave, float * fThrData, int iElements, float * fRy,
+void cont_rscl( float *  fObsWave, float * fObsData, int iObsElem, float * fThrWave, float * fThrData, int iThrElem, float * fRy,
 		       float * fSig, int iElemSig, float * fRf, int iElemRf, int iMessage, int iStrong, int iConst, 
 		       float fSigma, int iUpcut, float * fW_highprio, int iElemhighprio, int iIter, int iLin, int iVdop )
 {
 	float fWaveMax = std::max( fObsWave[0], fThrWave[0] );
 	
-	float fOper = std::min(IdlMax( fThrWave, iElements ), IdlMax( fObsWave, iElements ));
+	float fOper = std::min(IdlMax( fThrWave, iThrElem ), IdlMax( fObsWave, iObsElem ));
 	
-	int iIndex1[iElements], iIndex2[iElements];
+	int iIndex1[iObsElem], iIndex2[iThrElem];
 	
 	// loop iterators
 	int i = 0;
 	
-	int iCount1 = IdlWhere( fObsWave, ">=", fWaveMax, "<=", fOper, iElements, iIndex1);
-	int iCount2 = IdlWhere( fThrWave, ">=", fWaveMax, "<=", fOper, iElements, iIndex2);
+	int iCount1 = IdlWhere( fObsWave, ">=", fWaveMax, "<=", fOper, iObsElem, iIndex1);
+	int iCount2 = IdlWhere( fThrWave, ">=", fWaveMax, "<=", fOper, iThrElem, iIndex2);
 	
 	// initialising the arrays as per count from above IdlWhere
 	float fObsW[iCount1];
@@ -417,14 +417,14 @@ iterate:
 		
 		if( iIT == 0 )
 		{
-			float fX[iElements];
-			for( i=0; i< iElements; i++)
+			float fX[iObsElem];
+			for( i=0; i< iObsElem; i++)
 			{
 				fX[i] = log(fObsWave[i]) - fXm;
 			}
 			// input to the poly function is a vector
 			// hence the output of poly will be a vector
-			poly( fX, iElements, fA , fB, fRy );
+			poly( fX, iObsElem, fA , fB, fRy );
 		}
 	} // end of lin prakar
 	else
@@ -565,13 +565,13 @@ iterate:
 								fA0*((fB1*fB3)-(fB2*fB2))	);
 		if( iIT == 0 )
 		{
-			float fX[iElements];
-			for( i=0; i< iElements; i++)
+			float fX[iObsElem];
+			for( i=0; i< iObsElem; i++)
 			{
 				fX[i] = log(fObsWave[i]) - fXm;
 			}
 			
-			poly( fX, iElements, fA , fB, fC, fRy );
+			poly( fX, iObsElem, fA , fB, fC, fRy );
 		}
 	}
 	

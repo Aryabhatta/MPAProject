@@ -285,7 +285,7 @@ delete [] comment;
 
 // Loop for number of elements in mode (checking for every possible mode listed)
 // Procedure - choosing a range & then processing it 
-//for( int iCntr = 0; iCntr < iNoModes; iCntr++ ) TODO changed to make debuggin easier
+//for( int iCntr = 0; iCntr < iNoModes; iCntr++ ) //TODO changed to make debuggin easier
 for( int iCntr = 0; iCntr < 1; iCntr++ )
 {
     iCnt = 0;	// re-initialized for each wav segment
@@ -607,7 +607,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 
         // max value in thereotical spectrum
         float fSyMax = 0.0;
-        fSyMax = IdlMax<float>( fSy, iElements);
+        fSyMax = IdlMax<float>( fSy, iThrElem);
         
         int iFlag;
         if( fSyMax > fLimCont )
@@ -632,9 +632,15 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         	}
         	logFile.close();
         	logFile.clear();
-        	
+        }
+        
+        if( iConv )
+        {
             gaussFold( fSx, fSy, iElements, ( IdlMean(arrWr,2)/fRes) );
-            
+        }
+         
+         if( iPlot == 1 )
+         {
             logFile.open( strFileSpecsa4.data()  , ios::out );
             logFile << "After convolution" << endl;
         	for(iCntr1=0;iCntr1<iElements;iCntr1++)
@@ -645,106 +651,104 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         	logFile.clear();
             logFile.open( strFileSpecs.data() , ios::out  );
         }
-            
+         
+        float  fRy[iElements];  
         //
         //  Initial estimate of radial velocity fXrv
         //
         if( iCnt == 0 || fXrv == 0)
         {
-            fXrv = get_rv( fWavelen, fData, iElements, fSx, fSy, iElements, fXr,  iNomessage); // TO DEBUG            
-        }
+//            fXrv = get_rv( fWavelen, fData, iElements, fSx, fSy, iElements, fXr,  iNomessage);
+            fXrv = get_rv( fWavelen, fData, iElements, fSx, fSy, iThrElem, fXr,  iNomessage);
         
-        // Printing program check test result
-        //cout << endl << "********** NOTE *************** " << endl << "All is well till here !!! " << endl;
+            cout << "Radial Velocity in getchi: " << fXrv << endl;
+	        if( abs( fXrv ) < 1000.0 )
+	        {
+	            double fDiv = double ( fXrv ) / dCCC  + 1.0;
+	            for( iCntr1 = 0; iCntr1 < iElements; iCntr1++)
+	            {
+	                fWavelen[ iCntr1 ] =  fWavelen[ iCntr1 ] / fDiv;
+	            }
+	        }
+	        else
+	        {
+	            fXrv = 0.0;
+	        }
 
-        cout << "Radial Velocity in getchi: " << fXrv << endl;
-        if( abs( fXrv ) < 1000.0 )
-        {
-            double fDiv = double ( fXrv ) / dCCC  + 1.0;
-            for( iCntr1 = 0; iCntr1 < iElements; iCntr1++)
-            {
-                fWavelen[ iCntr1 ] =  fWavelen[ iCntr1 ] / fDiv;
-            }
+		    //
+		    // Rescale continnum
+		    //		    
+		    if( iUse_cont_rscl > 0 )
+		    {
+		        cont_rscl( fWavelen, fData, iElements, fSx, fSy, iThrElem, fRy);        
+		    }
+		    else
+		    {
+		    	for( iCntr1 =0; iCntr1<iElements; i++ )
+		    	{
+		    		fRy[iCntr1] = 1.0f; 
+		    	}
+		    }
+	    
+		    //
+		    // Final estimate of radial velocity
+		    //
+		    float fXrv2 = 0.0f;
+	
+	        int iIndex1[ iElements ], iIndex2[ iThrElem];
+	        
+	        int iCount1 = IdlWhere( fWavelen, ">=", (float) arrWrc[0], "<=", (float)arrWrc[1], iElements, iIndex1 );
+	        int iCount2 = IdlWhere( fSx, ">=", (float) arrWrc[0], "<=", (float) arrWrc[1], iThrElem, iIndex2 );
+	
+		    // Creating temporary array to contain values of fWavelen, fData...
+		    // according to indices iii1 = iCount1 & iii2 = iCount2
+		    float tmp_fWavelen[iCount1];
+		    float tmp_fDataRy[iCount1];
+		    
+		    float tmp_fSx[iCount2];
+		    float tmp_fSy[iCount2];
+		    
+		    for( i=0; i<iCount1; i++)
+		    {
+		    	tmp_fWavelen[i] = fWavelen[iIndex1[i]];
+		    	tmp_fDataRy[i] = fData[iIndex1[i]] * fRy[iIndex1[i]];
+		    }
+		    for( i=0; i< iCount2; i++)
+		    {
+		    	tmp_fSx[i] = fSx[iIndex2[i]];
+		    	tmp_fSy[i] = fSy[iIndex2[i]];
+		    }
+		    
+		    // Final estimate of Radial Velocity
+		    fXrv2 = get_rv( tmp_fWavelen, tmp_fDataRy, iCount1, tmp_fSx, tmp_fSy, iCount2, fXr, iNomessage);
+	    
+		    if( abs( fXrv2 ) < 1000.0 )
+	        {
+	            double fDiv = double ( fXrv2 ) / dCCC  + 1.0;
+	            for( iCntr1 = 0; iCntr1 < iElements; iCntr1++)
+	            {
+	                fWavelen[ iCntr1 ] =  fWavelen[ iCntr1 ] / fDiv;
+	            }
+	        }
+	        else
+	        {
+	            fXrv2 = 0.0;
+	        }
+	    
+		    // Adding the velocities
+		    fXrv = fXrv + fXrv2;
+		    
+		    cout << endl << "Final estimate of radial velocity in km/s: " << fXrv << endl;
+	    
+		    // converting float to string
+		    std::ostringstream ss;
+		    ss << fXrv;
+		    string strfXrv( ss.str());
+		    
+		    string Text1 = "RV: ";
+		    Text1.append(strfXrv);
+		    Text1.append(" km/s");
         }
-        else
-        {
-            fXrv = 0.0;
-        }
-
-	    //
-	    // Rescale continnum
-	    //
-	    float  fRy[iElements];
-	    if( iUse_cont_rscl > 0 )
-	    {
-	        cont_rscl( fWavelen, fData, fSx, fSy, iElements, fRy);        
-	    }
-	    else
-	    {
-	    	for( iCntr1 =0; iCntr1<iElements; i++ )
-	    	{
-	    		fRy[iCntr1] = 1.0f; 
-	    	}
-	    }
-	    
-	    //
-	    // Final estimate of radial velocity
-	    //
-	    float fXrv2 = 0.0f;
-
-        int iIndex1[ iElements ], iIndex2[ iElements];
-        
-        int iCount1 = IdlWhere( fWavelen, ">=", (float) arrWrc[0], "<=", (float)arrWrc[1], iElements, iIndex1 );
-        int iCount2 = IdlWhere( fSx, ">=", (float) arrWrc[0], "<=", (float) arrWrc[1], iElements, iIndex2 );
-
-	    // Creating temporary array to contain values of fWavelen, fData...
-	    // according to indices iii1 = iCount1 & iii2 = iCount2
-	    float tmp_fWavelen[iCount1];
-	    float tmp_fDataRy[iCount1];
-	    
-	    float tmp_fSx[iCount2];
-	    float tmp_fSy[iCount2];
-	    
-	    for( i=0; i<iCount1; i++)
-	    {
-	    	tmp_fWavelen[i] = fWavelen[iIndex1[i]];
-	    	tmp_fDataRy[i] = fData[iIndex1[i]] * fRy[iIndex1[i]];
-	    }
-	    for( i=0; i< iCount2; i++)
-	    {
-	    	tmp_fSx[i] = fSx[iIndex2[i]];
-	    	tmp_fSy[i] = fSy[iIndex2[i]];
-	    }
-	    
-	    // Final estimate of Radial Velocity
-	    fXrv2 = get_rv( tmp_fWavelen, tmp_fDataRy, iCount1, tmp_fSx, tmp_fSy, iCount2, fXr, iNomessage);
-	    
-	    if( abs( fXrv2 ) < 1000.0 )
-        {
-            double fDiv = double ( fXrv2 ) / dCCC  + 1.0;
-            for( iCntr1 = 0; iCntr1 < iElements; iCntr1++)
-            {
-                fWavelen[ iCntr1 ] =  fWavelen[ iCntr1 ] / fDiv;
-            }
-        }
-        else
-        {
-            fXrv2 = 0.0;
-        }
-	    
-	    // Adding the velocities
-	    fXrv = fXrv + fXrv2;
-	    
-	    cout << endl << "Final estimate of radial velocity in km/s: " << fXrv << endl;
-	    
-	    // converting float to string
-	    std::ostringstream ss;
-	    ss << fXrv;
-	    string strfXrv( ss.str());
-	    
-	    string Text1 = "RV: ";
-	    Text1.append(strfXrv);
-	    Text1.append(" km/s");
 	    
 	    //
 	    // xsig -- number of flux points to be considered: +-1 sigma in the error
@@ -770,12 +774,13 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 	    
 	    int iXsigma = 1;
 	    
-	    dCoef = ecorr( fSx, fSy, iElements, fWavelen, fDataRy, iElements, iXsigma, fRf, iElements, arrMask, iElements);
+	    dCoef = ecorr( fSx, fSy, iThrElem, fWavelen, fDataRy, iElements, iXsigma, fRf, iElements, arrMask, iElements);
 	    
 	    delete [] fRf;
 	    
 	    //cout << endl << "********** NOTE *************** " << endl << "All is well till here !!! " << endl;
 	    // converting double to string
+	    std::ostringstream ss;
 	    ss << dCoef;
 	    string strdCoef( ss.str());
 	    
