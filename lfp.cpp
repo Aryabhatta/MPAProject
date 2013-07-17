@@ -28,6 +28,12 @@ using namespace std;
 
 #define print 0
 
+float round_to_decimal(float f) {
+    char buf[42];
+    sprintf(buf, "%.7g", f); // round to 7 decimal digits
+    //cout << "Buf = " << buf << endl;
+    return (float)atof(buf);
+}
 bool lfp( float ** fSx, float ** fSy, int * iThrElem, float fTeff, float fLogg, float fLogz, float fXi, float fEps_dev[2], float fGauss, float fGamma, 
 		int iExtrapol, string strGrid, string strRange, int iNomessage,int iCnvl, int iNomc )
 {
@@ -290,6 +296,7 @@ for( int i = 0; i< iNpar; i++ )
 
 iExtrapol = 0;
 double dP[ iNpar ];
+//float dP[ iNpar ];
 
 // counting no of elements in fEps_dev
 int iSizefEps = 2; // Hardcoding here, for use further
@@ -352,7 +359,9 @@ for( int i = 0; i< iNpar ; i++)
 
             if( iCntr == 1 )
             {
-                dP[i] = fEps_dev[2*iIdx+1];
+                dP[i] = (double) fEps_dev[2*iIdx+1];
+                // little hack to avoid problems while converting from float to double
+                dP[i] = dP[i] + 0.000000001;            	
                 cout << endl << "Calculating dP[i] depeding on fEpd_dev !!!" << endl;
             }
         }
@@ -367,8 +376,8 @@ for( int i = 0; i< iNpar ; i++)
     for( int k =0; k < iSizelArray ;k ++ )
     {
         lindgenArr1[k] = k;
-        
-        fV[k] = gArray[i].min * lindgenArr1[k] * gArray[i].delta;
+        fV[k] = gArray[i].min + lindgenArr1[k] * gArray[i].delta;
+        fV[k] = round_to_decimal( fV[k]);
     }
     
     // mp
@@ -425,7 +434,6 @@ cout << endl << "No of Models = " << nModel << endl;
  * Working Perfectly till here
  */
 
-
  /*****************************************************
  // Routine to read the grid file
  *****************************************************/
@@ -477,7 +485,6 @@ flux = new float[ naxis1 ];
 iFluxCnt = naxis1;
 
 // The remaining logic of lfp.pro starts from here
-
 long nr_new = 0L;
 int iHcnt = 0;
 

@@ -542,7 +542,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         float fMg_eps = 0.0;
         if( fLogz < -0.6 )
         {
-            fMg_eps = 0.4;
+            fMg_eps = 0.4f;
         }
 
         bool bError;

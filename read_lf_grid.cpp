@@ -252,9 +252,9 @@ for( int i = 0; i< gArray.size(); i++ )
         strToken.erase(0);
 
         strToken = strNexttoken( strTemp, ' ' );            
-        gArray[iIndex].delta = atof( strToken.data() );
+        gArray[iIndex].delta = (float) atof( strToken.data() );
 
-        gArray[iIndex].n = atof( strTemp.data() );      
+        gArray[iIndex].n = (float) atof( strTemp.data() );      
     }
 }
     // NOTE

@@ -19,7 +19,9 @@ public:
     long n;
     long ion;
     double min;
-    double delta;    
+    double delta;
+//    float min;
+//    float delta;
 
     container( void ) 
     {
@@ -29,8 +31,10 @@ public:
         i = 0;
         n = 0;
         ion = 0;
-        min = 0.0D;
-        delta = 0.0D;
+//        min = 0.0f;
+//        delta = 0.0f;
+        min = 0.0d;
+        delta = 0.0d;
     }
 };
 
