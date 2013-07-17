@@ -586,7 +586,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 		
 		iPlot = 1;
 		if( iPlot == 1 )
-		{
+		{	
 			ofstream logFile;
 			string strThrSpectra("/home/shrikant/Desktop/MPA/Log/thrSpectrum.log");
 			logFile.open( strThrSpectra.data(), ios::out );

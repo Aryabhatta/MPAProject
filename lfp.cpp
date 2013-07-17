@@ -210,7 +210,6 @@ cout << "gArray.p" << " gArray.def" << " gArray.unit" << " gArray.ion" << " gArr
 for( int i = 0; i< gArray.size() ; i++ )
 {
 //    cout << gArray[i].p<<"\t"<<gArray[i].def << "\t" << gArray[i].unit << "\t" << gArray[i].ion <<"\t\t" << gArray[i].min<< "\t"<< gArray[i].delta << "\t"<<gArray[i].n<< endl;
-	
 	cout << setw(9) << left << gArray[i].p;
 	cout << setw(11) << left << gArray[i].def;
 	cout << setw(12) << left << gArray[i].unit; 
@@ -361,7 +360,7 @@ for( int i = 0; i< iNpar ; i++)
             {
                 dP[i] = (double) fEps_dev[2*iIdx+1];
                 // little hack to avoid problems while converting from float to double
-                dP[i] = dP[i] + 0.000000001;            	
+                dP[i] = dP[i] + 0.0000000001;            	
                 cout << endl << "Calculating dP[i] depeding on fEpd_dev !!!" << endl;
             }
         }
@@ -564,7 +563,7 @@ for( int i=0; i<iNpar; i++)
 	if( print )
 	cout << "dP[" << i << "]: " << dP[i] << "\tdDp[" << i << "]: " << dDp[i] <<endl;
 
-	if( print )
+	//if( print )
 	cout << "dDp[" << i << "] = " << dDp[i] << endl;
 }
 
@@ -579,6 +578,9 @@ for(int i=0; i<iNpar; i++)
 	
 	// setting 0th row
 	x[0][i] = 1.0d - x[1][i];
+	
+//	if( i==4)
+//		x[0][4] = -1.4901161e-08;
 	
 	cout << "x[1][i]: " << x[1][i] << " x[0][i]: " << x[0][i] << endl;  
 }
@@ -611,9 +613,11 @@ for(int i=0; i< iNpar2; i++)
 	iIdx = 0;
 	for( int j=0; j<iNpar; j++)
 	{
+		// addx has the iteration no i in binary
 		addx[j] = (i % (int)pow(2,(Lii[j]+1)))/ pow(2,Lii[j]);
 		iIdx += ((gArray[j].i + addx[j]) * nFac2[j]);
 	}
+	// addx & idx - correct values - checked by comparsion
 	
 	if( iIdx >= nModel )
 	{
@@ -792,15 +796,14 @@ nexta:
 		// f=y*coef
 		for( int i=0; i< iWaveCnt; i++)
 		{
-			*( *fSy + i ) = flux[i];
+			*( *fSy + i ) = flux[i] * dCoef;
 		}
 	}
 	else
 	{
-//		cout << "Dcoef: " << dCoef << endl;
 		for( int i=0; i< iWaveCnt; i++)
 		{
-			*( *fSy + i ) = *( *fSy + i ) + flux[i] * dCoef;
+			*( *fSy + i ) = *( *fSy + i ) + (flux[i] * dCoef);
 		}
 	}
 	
