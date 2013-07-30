@@ -557,7 +557,10 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         
         // temporary initialisation for writing routines ahead !!! -TODO-
         // Thereotical Spectra
-//        float fSx[ iElements ], fSy[ iElements ];
+//        // TODO COMMENT THIS REGION ---
+//        fSx = new float[ iElements ];
+//        fSy = new float[ iElements ];
+//        iThrElem = iElements;
 //        
 //        // Need to change when LFP starts working perfectly
 //        for( iCntr1 = 0; iCntr1 < iElements; iCntr1 ++ )
@@ -565,6 +568,8 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 //            fSx[ iCntr1 ] = fWavelen[ iCntr1 ];
 //            fSy[ iCntr1 ] = fData[ iCntr1];
 //        }
+//        bError = false;
+//        // TODO COMMENT THIS REGION ---
         
         // PLOT Observed Spectrum
         int iPlot = 1;
@@ -581,6 +586,11 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 			logFile.clear();        	
         }        
 
+        /**************************************************************************
+         * !!! Important !!!
+         * If you are commenting/uncommenting LFP, remember to reflect the changes
+         * in the intialisation of Sx , Sy above !!!
+         * ***********************************************************************/
         // Call to lfp (with thereotical spectra & values of Teff, Logg, Logz & fXi         		
 		bError = lfp( &fSx, &fSy, &iThrElem, fTeff, fLogg, fLogz, fXi, fEps_dev, fGauss, fGamma, iExtrapol, strGrid, strRange, iNomessage, iCnvl, iNomc );
 		
@@ -658,7 +668,6 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         //
         if( iCnt == 0 || fXrv == 0)
         {
-//            fXrv = get_rv( fWavelen, fData, iElements, fSx, fSy, iElements, fXr,  iNomessage);
             fXrv = get_rv( fWavelen, fData, iElements, fSx, fSy, iThrElem, fXr,  iNomessage);
         
             cout << "Radial Velocity in getchi: " << fXrv << endl;
@@ -802,11 +811,14 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 	    logFile<< " Coef: "  << dCoef[0] << " Xrv: " << fXrv << endl;
 	    
 	    iCnt++;
+	    
+	    // Moved inside as memory allocated in every iteration
+	    delete [] fSx;
+        delete [] fSy;
 
     } // end of iterations over grid points | counter - while loop
 
-    delete [] fSx;
-    delete [] fSy;
+    
     delete [] fWavelen; //**can replace dynamic array allocation with static**
     delete [] fData;
     delete [] arrMask;
