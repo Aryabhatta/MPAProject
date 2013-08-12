@@ -112,7 +112,12 @@ double dCCC = 299792.458;	// light velocity, km/s
 ofstream logFile; 	    // for log file
 ifstream inputFile; 	// for input file
 
+/************************************************
+ * CHANGE PATH BELOW 
+ ***********************************************/
 string strFileSpecs( "/home/shrikant/Desktop/MPA/Log/" );
+
+
 strFileSpecs.append( strLog );
 string strFileSpecsb4( "/home/shrikant/Desktop/MPA/Log/before.log" );
 string strFileSpecsa4( "/home/shrikant/Desktop/MPA/Log/after.log" );
@@ -121,7 +126,7 @@ string strFileSpecsa4( "/home/shrikant/Desktop/MPA/Log/after.log" );
 if ( !strLog.empty() )
 {
     // creating tempfileloc -TODO-
-    string strFileSpecs( "/home/shrikant/Desktop/MPA/Log/" );
+    //string strFileSpecs( "/home/shrikant/Desktop/MPA/Log/" );
     strFileSpecs.append( strLog );
 
     logFile.open( strFileSpecs.data() , ios::out | ios::app );
@@ -147,6 +152,10 @@ int iValid = 0;
 // Input file specification
 //string strInputFilePath = strSpdir + strFin;  -TODO-
 //string strInputFilePath( "/home/shrikant/Desktop/MPA/Files/SampleSpec.fits" );
+
+/************************************************
+ * CHANGE PATH BELOW 
+ ***********************************************/
 string strInputFilePath( "/home/shrikant/Desktop/MPA/Files/foutr1p1082f180" ); // sample file name
 																			// contains list of stars with Rlogz, Rteff, Rlogg
 
@@ -189,6 +198,9 @@ strFitsSpec.append( strSpobs );
 strFitsSpec.append( strSpecs );
     
 // temporary file path for FITS file TODO
+/************************************************
+ * CHANGE PATH BELOW 
+ ***********************************************/
 string strFitsFilePath( "/home/shrikant/Desktop/MPA/Files/spPlate-1962-53321.fits" ); // replace with strFitsSpec
 
 // Status Msg
@@ -576,6 +588,9 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         if( iPlot == 1)
         {
 			ofstream logFile;
+			/************************************************
+			 * CHANGE PATH BELOW 
+			 ***********************************************/
 			string strObsSpectra("/home/shrikant/Desktop/MPA/Log/ObsSpectrum.log");
 			logFile.open( strObsSpectra.data(), ios::out );
 			for( int i=0; i< iElements; i++)
@@ -598,6 +613,9 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 		if( iPlot == 1 )
 		{	
 			ofstream logFile;
+			/************************************************
+			 * CHANGE PATH BELOW 
+			 ***********************************************/
 			string strThrSpectra("/home/shrikant/Desktop/MPA/Log/thrSpectrum.log");
 			logFile.open( strThrSpectra.data(), ios::out );
 			for( int i=0; i< iThrElem; i++)

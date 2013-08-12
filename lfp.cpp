@@ -66,9 +66,17 @@ string elements[] = { "", "H", "HE", "LI", "BE", "B", "C", "N", "O", "F", \
                       , "LU", };
 
 // directory paths
+/************************************************
+ * CHANGE PATH BELOW 
+ ***********************************************/
 string strGrid_dir( "/home/shrikant/Desktop/MPA/Files/" );
+
 //string strGrid_dir( "/afs/mpa/data/mbergema/SIU/mod/grid/" );
 //string strGrid_dir_cnv( "/afs/mpa/data/mbergema/SIU/mod/grid/cnv/" );
+
+/************************************************
+ * CHANGE PATH BELOW 
+ ***********************************************/
 string strGrid_dir_cnv( "/home/shrikant/Desktop/MPA/Files/" );
 
 // Initialising uninitialiased variables
