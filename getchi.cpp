@@ -26,6 +26,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <fitsio.h>
+#include <unistd.h>
 #include "lfp.hpp"
 #include "get_rv.hpp"
 #include "cont_rscl.hpp"
@@ -45,12 +46,13 @@ OUTPUT
 
 -------------------------------------------------------------------------*/
 
-string ReadInput( string key );
-
 int main(int iArgCnt, char * pArg[])
 {
 
-int 	iFid  = 500; // Sample, actual value would be from pArg[2] -TODO-
+//int 	iFid  = 500;
+string Fid = ReadInput( "ARG:FID"); 
+int iFid = atoi(Fid.c_str());
+
 int	    iConv = 1;
 int 	iNomc = 0;
 
@@ -62,22 +64,21 @@ float	fLimCont = 1.01;	// error in spectrum interpolation
 
 int 	i = 0; // iteration counter
 
-//string temp = ReadInput( "DIR:INPUTDIR" );
-//cout << "DIR:INPUTDIR" << temp << endl;
-//return 0;
-
 enum eMode {Halpha, Mgb, CaT, Hbeta}; // any update here, pls also 
                                       // update iNoModes below
 int iNoModes = 4;
 
 // Directory paths
-string strSpdir( "/afs/mpa/project/stellar/mbergema/sspp/output1/" );
-string strSpobs( "/afs/mps/project/stellar/mbergema/sspp/"         );
-string strLocal( "/afs/mpa/data/mbergema/SIU/spec/output1"         );
-string strSpecs( "spPlate-1960-53287.fits"                         );
+//string strSpdir( "/afs/mpa/project/stellar/mbergema/sspp/output1/" );
+//string strSpobs( "/afs/mps/project/stellar/mbergema/sspp/"         );
+//string strLocal( "/afs/mpa/data/mbergema/SIU/spec/output1"         );
 
-string strFin( "Input_File_Name" );  // set it to pArg[1] -TODO-
-                                     // file of grid points Rlogz, Rteff, Rlogg
+//string strSpecs( "spPlate-1960-53287.fits"                         );
+string strSpecs = ReadInput( "FILE:FITSFILE");
+
+//string strFin( "Input_File_Name" );
+string strFin = ReadInput("FILE:GRIDPOINTS"); // file of grid points Rlogz, Rteff, Rlogg
+
 /*
  * Here in all References:
  * Rlogz - determines the metallicity of star
@@ -87,8 +88,8 @@ string strFin( "Input_File_Name" );  // set it to pArg[1] -TODO-
 
 string strLog( strSpecs );
 
-string strTemp( "_"    );
-strTemp.append( "500"  ); // sample fid no -TODO-
+string strTemp( "_" );
+strTemp.append( Fid ); 
 strTemp.append( ".log" );
 
 // Creatung a name for a log file
@@ -104,29 +105,23 @@ int iUse_rf   =	1;		// 1 = reliability function should be used
 int iUse_cont_rscl = 1;		// if continnum of observed spectrum is to
 			            	// be optimised
 
-// NOTE: not considering the 'renorm' keyword to set use_cont_rscl
-// Confirm and delete the note: getchi.pro line 45 -TODO-
-
 double dCCC = 299792.458;	// light velocity, km/s
 
 ofstream logFile; 	    // for log file
 ifstream inputFile; 	// for input file
 
 /************************************************
- * CHANGE PATH BELOW 
+ * Changing path for log directory:
+ * Go to ProgramInputs.txt. Change the path in
+ * section #DIR against LOGDIR
  ***********************************************/
-string strFileSpecs( "/home/shrikant/Desktop/MPA/Log/" );
-
-
-strFileSpecs.append( strLog );
-string strFileSpecsb4( "/home/shrikant/Desktop/MPA/Log/before.log" );
-string strFileSpecsa4( "/home/shrikant/Desktop/MPA/Log/after.log" );
+//string strFileSpecs( "/home/shrikant/Desktop/MPA/Log/" );
+string strLogDir = ReadInput( "DIR:LOGDIR");
+string strFileSpecs = strLogDir;
 
 // Open file for logging
 if ( !strLog.empty() )
 {
-    // creating tempfileloc -TODO-
-    //string strFileSpecs( "/home/shrikant/Desktop/MPA/Log/" );
     strFileSpecs.append( strLog );
 
     logFile.open( strFileSpecs.data() , ios::out | ios::app );
@@ -150,14 +145,15 @@ gettimeofday( &time1, NULL );
 int iValid = 0;
 
 // Input file specification
-//string strInputFilePath = strSpdir + strFin;  -TODO-
-//string strInputFilePath( "/home/shrikant/Desktop/MPA/Files/SampleSpec.fits" );
+string strInputDir = ReadInput("DIR:INPUTDIR");
 
 /************************************************
- * CHANGE PATH BELOW 
+ * Changing path for input directory:
+ * Go to ProgramInputs.txt. Change the path in
+ * section #DIR against INPUTDIR 
  ***********************************************/
-string strInputFilePath( "/home/shrikant/Desktop/MPA/Files/foutr1p1082f180" ); // sample file name
-																			// contains list of stars with Rlogz, Rteff, Rlogg
+//string strInputFilePath( "/home/shrikant/Desktop/MPA/Files/foutr1p1082f180" ); // sample file name
+string strInputFilePath = strInputDir + strFin; // contains list of stars with Rlogz, Rteff, Rlogg
 
 // Status Msg
 cout << "Reading grid points from " << strInputFilePath << endl;
@@ -193,15 +189,13 @@ int arrWrc[2];
  * the flux from the file corresponding to 640 fibers & 3857 wavelengths for each of them
  */
 
-string strFitsSpec( "" );
-strFitsSpec.append( strSpobs );
-strFitsSpec.append( strSpecs );
-    
-// temporary file path for FITS file TODO
 /************************************************
- * CHANGE PATH BELOW 
+ * Changing path for input directory:
+ * Go to ProgramInputs.txt. Change the path in
+ * section #DIR against INPUTDIR 
  ***********************************************/
-string strFitsFilePath( "/home/shrikant/Desktop/MPA/Files/spPlate-1962-53321.fits" ); // replace with strFitsSpec
+//string strFitsFilePath( "/home/shrikant/Desktop/MPA/Files/spPlate-1962-53321.fits" ); 
+string strFitsFilePath = strInputDir + strSpecs;
 
 // Status Msg
 cout << "Reading from FITS file " << strFitsFilePath << endl;
@@ -252,7 +246,6 @@ int iCntr1 = 0;
 while( iCntr1 < naxis1 )
 {
     fWavelengths[ iCntr1 ] = powf( 10.0, fCrval1 );
-
     fCrval1 += fCoeff1;
     iCntr1++;
 }
@@ -297,7 +290,7 @@ delete [] comment;
 
 // Loop for number of elements in mode (checking for every possible mode listed)
 // Procedure - choosing a range & then processing it 
-//for( int iCntr = 0; iCntr < iNoModes; iCntr++ ) //TODO changed to make debuggin easier
+//for( int iCntr = 0; iCntr < iNoModes; iCntr++ ) /* TODO:Uncomment this line & comment next line to run the program for all modes */
 for( int iCntr = 0; iCntr < 1; iCntr++ )
 {
     iCnt = 0;	// re-initialized for each wav segment
@@ -312,6 +305,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
                     arrWrc[0] = arrWr[0];
                     arrWrc[1] = arrWr[1];
                     break;
+                    
         case CaT:   strRange = "CaT";
                     strWcen = "W8600";
                     arrWr[0] = 8400;
@@ -319,6 +313,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
                     arrWrc[0] = arrWr[0];
                     arrWrc[1] = arrWr[1];
                     break;
+                    
         case Halpha:strRange = "Halpha";
                     strWcen = "W6520";
                     arrWr[0] = 6400;
@@ -326,6 +321,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
                     arrWrc[0] = arrWr[0];
                     arrWrc[1] = arrWr[1];
                     break;
+                    
         case Hbeta: strRange = "Hbeta";
                     strWcen = "W4850";
                     arrWr[0] = 4600;
@@ -333,6 +329,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
                     arrWrc[0] = arrWr[0];
                     arrWrc[1] = arrWr[1];
                     break;
+                    
         default:    break;
     }
        
@@ -396,7 +393,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
     maxMedianFilter( fData, iElements, 3 );
 
     // Extreme initial values for DataMin and DataMax
-    float fDataMin = 100000000, fDataMax = - 1000000;
+    float fDataMin = 100000000, fDataMax = -1000000;
 
     // Integrating logic of finding fDataMin & fDataMax
     for( iCntr1 = 0; iCntr1 < iElements; iCntr1++ )
@@ -416,8 +413,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
     cout << "DataMax = " << fDataMax << "\t" ;
     cout << "DataMin = " << fDataMin << endl;
 
-    // create Byte array
-    // dont quite understood the motivation of creating this array -TODO-
+    // Byte array for masking   
     unsigned char * arrMask = new unsigned char[ iElements ];
     
     for( iCntr1=0; iCntr1 < iElements; iCntr1++)
@@ -476,7 +472,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
     float fRteff = 0.0 ;
     float fRlogg = 0.0 ;
 
-    // Make inputfile point to beginning of file 
+    // Make inputfile point to beginning of file for every mode 
     inputFile.clear();
     inputFile.seekg(0,inputFile.beg);
 
@@ -567,31 +563,35 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 
         strUpper( strRange );
         
-        // temporary initialisation for writing routines ahead !!! -TODO-
-        // Thereotical Spectra
-//        // TODO COMMENT THIS REGION ---
-//        fSx = new float[ iElements ];
-//        fSy = new float[ iElements ];
-//        iThrElem = iElements;
-//        
-//        // Need to change when LFP starts working perfectly
-//        for( iCntr1 = 0; iCntr1 < iElements; iCntr1 ++ )
-//        {
-//            fSx[ iCntr1 ] = fWavelen[ iCntr1 ];
-//            fSy[ iCntr1 ] = fData[ iCntr1];
-//        }
-//        bError = false;
-//        // TODO COMMENT THIS REGION ---
+          // Thereotical Spectra
+         /*
+          * Uncomment below region of code if you want to skip lfp
+          * by making thereotical spectra = observed spectra
+          */        
+
+/*
+        fSx = new float[ iElements ];
+        fSy = new float[ iElements ];
+        iThrElem = iElements;
+        
+        // Need to change when LFP starts working perfectly
+        for( iCntr1 = 0; iCntr1 < iElements; iCntr1 ++ )
+        {
+            fSx[ iCntr1 ] = fWavelen[ iCntr1 ];
+            fSy[ iCntr1 ] = fData[ iCntr1];
+        }
+        bError = false;
+*/
         
         // PLOT Observed Spectrum
-        int iPlot = 1;
+        int iPlot = 0; // change iPlot to 1 if you want to plot
         if( iPlot == 1)
         {
 			ofstream logFile;
-			/************************************************
-			 * CHANGE PATH BELOW 
-			 ***********************************************/
-			string strObsSpectra("/home/shrikant/Desktop/MPA/Log/ObsSpectrum.log");
+			// Logs the observed spectra at standard log directory
+			//string strObsSpectra("/home/shrikant/Desktop/MPA/Log/ObsSpectrum.log");
+			string strObsSpectra = strLogDir + "ObsSpectrum.log";
+			
 			logFile.open( strObsSpectra.data(), ios::out );
 			for( int i=0; i< iElements; i++)
 			{
@@ -613,10 +613,12 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 		if( iPlot == 1 )
 		{	
 			ofstream logFile;
-			/************************************************
-			 * CHANGE PATH BELOW 
-			 ***********************************************/
-			string strThrSpectra("/home/shrikant/Desktop/MPA/Log/thrSpectrum.log");
+			
+			// Logging thereotical spectra in log directory
+			
+			//string strThrSpectra("/home/shrikant/Desktop/MPA/Log/thrSpectrum.log");
+			string strThrSpectra = strLogDir + "thrSpectrum.log";
+			
 			logFile.open( strThrSpectra.data(), ios::out );
 			for( int i=0; i< iThrElem; i++)
 			{
@@ -626,7 +628,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 			logFile.clear();
 		}
 		
-		if( bError || iThrElem == 0 ) // ' no of elements in fSy = 0 '
+		if( bError || iThrElem == 0 ) 
         {
             // goto NEXT iteration
             iCnt++; // iCnt initialised at starting of loop over no of modes
@@ -652,6 +654,7 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         {
         	logFile.close();
         	logFile.clear();
+        	string strFileSpecsb4 = strFileSpecs + "before.log";
         	logFile.open( strFileSpecsb4.data() , ios::out );
         	logFile << "Before convolution" << endl;
         	for(iCntr1=0;iCntr1<iElements;iCntr1++)
@@ -666,9 +669,11 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         {
             gaussFold( fSx, fSy, iElements, ( IdlMean(arrWr,2)/fRes) );
         }
-         
+        
+         iPlot = 0;
          if( iPlot == 1 )
          {
+        	string strFileSpecsa4 = strFileSpecs + "after.log";
             logFile.open( strFileSpecsa4.data()  , ios::out );
             logFile << "After convolution" << endl;
         	for(iCntr1=0;iCntr1<iElements;iCntr1++)
@@ -680,7 +685,8 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
             logFile.open( strFileSpecs.data() , ios::out  );
         }
          
-        float  fRy[iElements];  
+        float  fRy[iElements];
+        
         //
         //  Initial estimate of radial velocity fXrv
         //
@@ -789,10 +795,6 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 	    	fDataRy[i] = fData[i] * fRy[i];
 	    }
 	    
-	    // Allocating memory here itself
-//	    int iMaskSz = iElements + 1;
-//	    unsigned char * mask = (BYTE * )malloc(sizeof(BYTE) * iMaskSz);
-	    
 	    float * fRf = (float *)malloc(sizeof(float) * iElements );
 	    for( i=0; i< iElements; i++)
 	    {
@@ -805,7 +807,6 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 	    
 	    delete [] fRf;
 	    
-	    //cout << endl << "********** NOTE *************** " << endl << "All is well till here !!! " << endl;
 	    // converting double to string
 	    std::ostringstream ss;
 	    ss << dCoef;
@@ -813,7 +814,6 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
 	    
 	    string Text2 = "cf: ";
 	    Text2.append( strdCoef );
-	    // IGNORING the options that are under plot_it
 	     
 	    if( iCnt % 50 == 0 )
 	    {
@@ -835,7 +835,6 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         delete [] fSy;
 
     } // end of iterations over grid points | counter - while loop
-
     
     delete [] fWavelen; //**can replace dynamic array allocation with static**
     delete [] fData;
@@ -865,86 +864,6 @@ inputFile.close();
 return 0;
 }
 
-
-string ReadInput( string name )
-{
-	// get Current directory
-	string CurrentDir("/home/shrikant/Desktop/MPA/Files/");
-	string strInputFilePath = CurrentDir + "ProgramInputs.txt";
-	
-	ifstream inputFile; 	// for input file
-
-	// Status Msg
-	cout << "Reading program inputs  " << strInputFilePath << endl;
-
-	// Open input file
-	inputFile.open( strInputFilePath.data(), ifstream::in );
-
-	if( ! inputFile.is_open() )
-	{
-	   cout << "Wrong path to Input file !!! Aborting !!!";
-	   return 0;
-	}
-	
-	char cDelim = ':';
-	string KeySecName = strNexttoken( name, cDelim);
-	string KeyName = name;
-	string keyValue;
-	
-	strTrim( KeySecName, 2 );
-    strUpper( KeySecName );
-    
-    strTrim( KeyName, 2 );
-    strUpper( KeyName );
-	
-    string strRow;
-    bool SectionFound = false;    
-    
-	while( ! inputFile.eof() ) // loop that reads no of points
-	{	
-		getline( inputFile, strRow );
-		
-		// Ignore comments
-		if( strRow.substr(0,1) == ";" )
-			continue;
-		
-		if( !SectionFound )
-		{
-			// Goto Sections only
-			if( strRow.substr(0,1) != "#" )
-				continue;
-			
-			SectionFound = true;
-			
-			if( SectionFound )
-			{
-				// Check if this is the section we are looking for
-				string SecName = strRow.substr(1,strRow.length());
-				
-				if( SecName != KeySecName )
-				{
-					SectionFound = false;
-					continue;
-				}
-			}
-		}
-		else
-		{
-			if( strRow.substr(0,KeySecName.length()) != KeySecName )
-			{
-				continue;
-			}
-			
-			keyValue = strNexttoken( strRow, '=');
-			keyValue = strRow;
-			strTrim( keyValue,2);
-			break;
-		}
-	}
-	
-	inputFile.close();
-	return keyValue;
-}
 
 
 

@@ -124,7 +124,10 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
     if( iThrElem==0 )
     {
     
-	    string strSolarFlux("/home/shrikant/Desktop/MPA/Files/solarflux.fits");
+    	string strInputDir = ReadInput( "DIR:INPUTDIR" );
+    	
+	    //string strSolarFlux("/home/shrikant/Desktop/MPA/Files/solarflux.fits");
+    	string strSolarFlux = strInputDir + "solarflux.fits";
 	    
 	    cout << endl << "Loading solar flux spectrum from fits file as reference" << endl;
 	    
@@ -423,8 +426,12 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     } 
     
     ofstream logFile;
-    string strb4("/home/shrikant/Desktop/MPA/Log/interpolb4.log");
-    string stra4("/home/shrikant/Desktop/MPA/Log/interpola4.log");
+    //string strb4("/home/shrikant/Desktop/MPA/Log/interpolb4.log");
+    //string stra4("/home/shrikant/Desktop/MPA/Log/interpola4.log");
+    
+    string strb4 = ReadInput("DIR:LOGDIR") + "interpolb4.log";
+    string stra4 = ReadInput("DIR:LOGDIR") + "interpola4.log";
+    
     if( PLOT )
     {    
 	    logFile.open(strb4.data(),ios::out);    
@@ -559,8 +566,11 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     
     if( PLOT )
     {
-    	string strNyrv("/home/shrikant/Desktop/MPA/Log/RV.log");
-    	string strNysp("/home/shrikant/Desktop/MPA/Log/SP.log");
+//    	string strNyrv("/home/shrikant/Desktop/MPA/Log/RV.log");
+//    	string strNysp("/home/shrikant/Desktop/MPA/Log/SP.log");
+    	
+    	string strNyrv = ReadInput("DIR:LOGDIR") + "RV.log";
+    	string strNysp = ReadInput("DIR:LOGDIR") + "SP.log";
     	
     	logFile.open(strNysp.data(), ios::out );
     	for( i=0; i<lNrPix; i++)

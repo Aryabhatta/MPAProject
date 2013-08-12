@@ -1,3 +1,20 @@
+/*************************************************************************
+*
+* Copyright:		Max Planck Institute for Astrophysics (MPA)
+* 
+* File:				read_lf_grid.hpp
+* 
+* Routine Info:		Declaration of methods & data structures for
+* 					reading from .def file
+*
+* Author:
+*
+* Modification 
+* Log:	    		
+*		        	
+*
+**************************************************************************/
+
 #include <iostream>
 #include <string>
 #include <vector>

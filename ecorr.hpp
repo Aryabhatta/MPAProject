@@ -1,3 +1,19 @@
+/*************************************************************************
+*
+* Copyright:		Max Planck Institute for Astrophysics (MPA)
+* 
+* File:				ecorr.hpp
+* 
+* Routine Info:		Declaration of methods for ecorr.cpp
+*
+* Author:
+*
+* Modification 
+* Log:	    		
+*		        	
+*
+**************************************************************************/
+
 #include <iostream>
 #include <math.h>
 #include "idlFuncn.hpp"

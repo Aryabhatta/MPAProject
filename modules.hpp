@@ -1,8 +1,23 @@
+/*************************************************************************
+*
+* Copyright:		Max Planck Institute for Astrophysics (MPA)
+* 
+* File:				modules.hpp
+* 
+* Routine Info:		Declaration of necessary numerical methodss
+*
+* Author:
+*
+* Modification 
+* Log:	    		
+*		        	
+*
+**************************************************************************/
+
 #include <iostream>
 #include <string>
 #include <fstream>
 #include "idlFuncn.hpp"
-
 using namespace std;
 
 #ifndef MODULES_H
@@ -11,8 +26,8 @@ using namespace std;
 #define NotDefined -32766 // -32767 + 1
 #define NULLPTR 0
 
-// regular grids
-//double * integ( double * dNX_SP, double * dNY_SP ); // to pick the routine from Numerical Recipes site
+string ReadInput( string name );
+
 void integ( double * X, double * Y, int iArraySz, double * dRes );
 
 void gaussFold( float * fWavelen, float * fFlux, int iSize, float fSigma, int iRadius = 2 ); 

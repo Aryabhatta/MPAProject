@@ -39,10 +39,6 @@ string elements[] = { "", "H", "HE", "LI", "BE", "B", "C", "N", "O", "F", \
                       , "LU", }; // 72 ELEMENTS, 
 
 
-// Manipulating strGridDef file for testing TODO-CHANGE-
-//strGridDef = "/home/shrikant/Desktop/MPA/Files/lf_grid4850.def";
-//strGridDef = "/home/shrikant/Desktop/MPA/Files/lf_grid6520.def";
-
 // Status
 cout << "Reading from grid definition file " << strGridDef << endl;
 

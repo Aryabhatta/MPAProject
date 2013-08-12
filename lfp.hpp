@@ -1,3 +1,19 @@
+/*************************************************************************
+*
+* Copyright:		Max Planck Institute for Astrophysics (MPA)
+* 
+* File:				lfp.hpp
+* 
+* Routine Info:		Declaration of methods for lfp.cpp
+*
+* Author:
+*
+* Modification 
+* Log:	    		
+*		        	
+*
+**************************************************************************/
+
 #include <iostream>
 #include <string>
 #include "read_lf_grid.hpp"

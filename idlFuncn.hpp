@@ -1,3 +1,20 @@
+/*************************************************************************
+*
+* Copyright:		Max Planck Institute for Astrophysics (MPA)
+* 
+* File:				idlFuncn.hpp
+* 
+* Routine Info:		Declaration of methods imitating behavious of some of
+* 					the well known methods in IDL
+*
+* Author:
+*
+* Modification 
+* Log:	    		
+*		        	
+*
+**************************************************************************/
+
 #include <iostream>
 #include <string>
 

@@ -21,12 +21,97 @@
 #include <algorithm>
 #include <vector>
 #include <math.h>
+#include <unistd.h>
 
 using namespace std;
 
+#define MAXPATHLEN 300
 
-// NOTE: IT WOULD BE A GOOD IDEA TO SEPARATE THE IDL IMPLEMENTATIONS IN DIFFERENT FILES ALTOGETHER
+// Routine for reading Input from ProgrammInputs.txt
+string ReadInput( string name )
+{
+	// get Current directory
+	char temp[MAXPATHLEN];
+	getcwd( temp, MAXPATHLEN );
+	
+//	string CurrentDir("/home/shrikant/Desktop/MPA/CPP/");
+	string CurrentDir ( temp );
+	CurrentDir += "/";
+		
+	string strInputFilePath = CurrentDir + "ProgramInputs.txt";
+	
+	ifstream inputFile; 	// for input file
 
+	// Open input file
+	inputFile.open( strInputFilePath.data(), ifstream::in );
+
+	if( ! inputFile.is_open() )
+	{
+	   cout << "Wrong path to Input file !!! Aborting !!!";
+	   return 0;
+	}
+	
+	char cDelim = ':';
+	string KeySecName = strNexttoken( name, cDelim);
+	string KeyName = name;
+	string keyValue;
+	
+	strTrim( KeySecName, 2 );
+    strUpper( KeySecName );
+    
+    strTrim( KeyName, 2 );
+    strUpper( KeyName );
+	
+    string strRow;
+    bool SectionFound = false;    
+    
+	while( ! inputFile.eof() ) // loop that reads no of points
+	{	
+		getline( inputFile, strRow );
+		
+		// Ignore comments
+		if( strRow.substr(0,1) == ";" )
+			continue;
+		
+		if( !SectionFound )
+		{
+			// Goto Sections only
+			if( strRow.substr(0,1) != "#" )
+				continue;
+			
+			SectionFound = true;
+			
+			if( SectionFound )
+			{
+				// Check if this is the section we are looking for
+				string SecName = strRow.substr(1,strRow.length());
+				
+				if( SecName != KeySecName )
+				{
+					SectionFound = false;
+					continue;
+				}
+			}
+		}
+		else
+		{
+			if( strRow.substr(0,KeyName.length()) != KeyName )
+			{
+				continue;
+			}
+			
+			keyValue = strNexttoken( strRow, '=');
+			keyValue = strRow;
+			strTrim( keyValue,2);
+			break;
+		}
+	}
+	
+	inputFile.close();
+	return keyValue;
+}
+
+// Routine to check if the variable value has been set or not
 bool keyword_set(int iNumber)
 {
 	if( iNumber != NotDefined )
@@ -43,6 +128,7 @@ void poly( float * fX, int iSizefx, float Coeff1, float Coeff2 , float * fOut)
 	// Coeff* - Coefficients	
 	// Computes c0 + x * c1 + x^2 * c2 +...
 	// degree of poly = #Coeff* - 1
+	
 	float x = 0;
 	for( int i=0; i< iSizefx; i++)
 	{
@@ -59,6 +145,7 @@ void poly( float * fX, int iSizefx, float Coeff1, float Coeff2, float Coeff3, fl
 	// Coeff* - Coefficients	
 	// Computes c0 + x * c1 + x^2 * c2 +...
 	// degree of poly = #Coeff* - 1
+	
 	float x = 0;
 	for( int i=0; i< iSizefx; i++)
 	{
@@ -66,6 +153,7 @@ void poly( float * fX, int iSizefx, float Coeff1, float Coeff2, float Coeff3, fl
 		fOut[i] = Coeff1 + x * ( Coeff2 + x * Coeff3);
 	}
 }
+
 // Implementation of IDL convol
 void convol( float * fObs, float * fData, float * fObs1, float * fData1, int iElements, int iVdop)
 {
@@ -76,7 +164,7 @@ void convol( float * fObs, float * fData, float * fObs1, float * fData1, int iEl
 	// is centered over each data point.
 	
 	
-	// ###################  NOTE   ################################
+	// ###################  IMPORTANT NOTE   ################################
 	// Control never enters the place where convol is written in cont_rscl.cpp.
 	// so skipping the implementation of convol
 	// Here, this function is just a dummy to avoid compilation errors
@@ -85,8 +173,7 @@ void convol( float * fObs, float * fData, float * fObs1, float * fData1, int iEl
 // Implementation of IDL integ for regular grids ( two input parameters )
 // Integrated a function provided as an arry of points
 void integ( double * X, double * Y, int iArraySz, double * dRes )
-{
-    // THEORY FROM IDL 
+{   
     /*
     PROCEDURE - Simpson Integration, where the mid-interval points are obtained
     from cubic interpolation using Neville's Algorithm
@@ -110,6 +197,7 @@ void integ( double * X, double * Y, int iArraySz, double * dRes )
     int n = 0;
     double z[iArraySz];
     double sum = 0.0d;
+    
     /******************************************************
      * As per this logic, dRes will start from 0 for 0 & 
      * integration of all for last element
@@ -117,7 +205,8 @@ void integ( double * X, double * Y, int iArraySz, double * dRes )
 	    
     // not taking into consideration imin & imax logic
     // just perforing a simple integration'
-    // code help taken from www.astro.washington + integ + idl    
+    // code help taken from www.astro.washington + integ + idl
+    
     for(int i=0; i < iArraySz; i++)
     {
     	ihi = i;
@@ -136,28 +225,7 @@ void integ( double * X, double * Y, int iArraySz, double * dRes )
 	    }
     	
     	dRes[i] = sum; 
-    }
-
-/*    
-    // kernel to do integration ( using trapeziodal rule )
-    int ilo = 0; // low of absicca
-    int ihi = iArraysz-1; // highest sample
-    
-    int n = ihi - ilo;
-    double z[iArraySz];
-    double sum = 0.0d;
-    
-    for( int i=0; i< iArraysz-1; i++)
-    {
-    	z[i] = Y[i+1] + y[i];
-    }
-    
-    for( int i=0; i< iArraySz-1; i++)
-    {
-    	sum += ( (z[i]/2) * (X[i+1]-X[i]) );
-    }
- */
-    
+    }    
 }
 
 
@@ -227,6 +295,7 @@ void interpol( float * Y, float * X, int iSize, float * X1 , float * Y1out, int 
 	// X - Abcissa values for Y (assuming X monotonically increasing)
 	// X1 - Absicca values for Y1out
 	// Y1out- result
+	
 	int i,j;
 	float x = 0;
 	float x1, x2,y1,y2;

@@ -1,8 +1,17 @@
-#ARGUMENTS
+; The keywords with # are section names
+; Inside section, every line with ';' is a comment
+; Inside section, there are keyword-value pairs
+; Change the values in front of keyword to change argument / filename / directory
 
-#DIRECTORIES
+; Section for arguments
+#ARG
 
-; COMMENTS
+; Fiber ID
+FID = 500
+
+; Section for directories
+#DIR
+
 ; InputDir is path where fitsfile & gridpoints file is kept
 INPUTDIR = /home/shrikant/Desktop/MPA/Files/
 
@@ -12,7 +21,8 @@ OUTPUTDIR =
 ; log directory is place you want to keep all the logs
 LOGDIR= /home/shrikant/Desktop/MPA/Log/
 
-#FILENAMES
+; Section for file names 
+#FILE
 
 FITSFILE=spPlate-1962-53321.fits
 

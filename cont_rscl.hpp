@@ -1,3 +1,18 @@
+/*************************************************************************
+*
+* Copyright:		Max Planck Institute for Astrophysics (MPA)
+* 
+* File:				cont_rscl.hpp
+* 
+* Routine Info:		Declaration of methods for cont_rscl.cpp
+*
+* Author:
+*
+* Modification 
+* Log:	    		
+*		        	
+*
+**************************************************************************/
 
 #include <iostream>
 #include <math.h>

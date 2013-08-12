@@ -252,8 +252,9 @@ void cont_rscl( float *  fObsWave, float * fObsData, int iObsElem, float * fThrW
 	if( iPlot == 1 )
 	{
 		ofstream logFile;
-		string strThr("/home/shrikant/Desktop/MPA/Log/thr.log");
-		string strObs("/home/shrikant/Desktop/MPA/Log/obs.log");
+		string strThr = ReadInput("DIR:LOGDIR") + "thr.log";
+		//string strObs("/home/shrikant/Desktop/MPA/Log/obs.log");
+		string strObs = ReadInput("DIR:LOGDIR") + "obs.log";
 		
 		logFile.open( strThr.data(), ios::out );
 		for( i=0; i < iCount2; i++)
@@ -741,7 +742,9 @@ iterate:
 	if( iPlot == 1 )
 	{
 		ofstream logFile;
-		string strRy("/home/shrikant/Desktop/MPA/Log/ry.log");
+		
+		//string strRy("/home/shrikant/Desktop/MPA/Log/ry.log");
+		string strRy = ReadInput("DIR:LOGDIR") + "ry.log";
 				
 		logFile.open( strRy.data(), ios::out );
 		for( i=0; i < iCount1; i++)

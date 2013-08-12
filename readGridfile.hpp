@@ -1,3 +1,20 @@
+/*************************************************************************
+*
+* Copyright:		Max Planck Institute for Astrophysics (MPA)
+* 
+* File:				readGridFile.hpp
+* 
+* Routine Info:		Declaration of methods for reading from grid file
+* 					( which is in FITS format )
+*
+* Author:
+*
+* Modification 
+* Log:	    		
+*		        	
+*
+**************************************************************************/
+
 #include <iostream>
 #include <string>
 #include <fitsio.h>
@@ -22,16 +39,5 @@ bool readGridFlux( string strGridFileSpecs, float * flux, int iIdx);
 
 // Read Dimensions
 bool readGridDim( string strGridFileSpecs, int iHdu,  int * naxis1, int * naxis2 );
-
-// int * descr;
-// int iDescrCnt;
-// readGridDescr(strGridFileSpecs, descr, &iDescrCnt )
-
-// float * fWave; int iWaveCnt;
-// readGridWave( strGridFileSpecs, fWave, &iWaveCnt)
-
-// float * flux; int iFluxCnt;
-// readGridFlux(strGridFileSpecs, flux, &iFluxCnt)
-
 
 #endif

@@ -1,3 +1,19 @@
+/*************************************************************************
+*
+* Copyright:		Max Planck Institute for Astrophysics (MPA)
+* 
+* File:				get_rv.hpp
+* 
+* Routine Info:		Declaration of methods for get_rv.cpp
+*
+* Author:
+*
+* Modification 
+* Log:	    		
+*		        	
+*
+**************************************************************************/
+
 #include <iostream>
 #include <math.h>
 #include <stdlib.h>

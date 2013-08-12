@@ -87,7 +87,8 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 	if( iPlot == 1)
 	{
 		ofstream logFile;
-		string strBefore("/home/shrikant/Desktop/MPA/Log/interpolb4Ecorr.log");
+		//string strBefore("/home/shrikant/Desktop/MPA/Log/interpolb4Ecorr.log");
+		string strBefore = ReadInput("DIR:LOGDIR") + "interpolb4Ecorr.log";
 		
 		logFile.open( strBefore.data(), ios::out );
 		for( i=0; i < iCount1; i++ )
@@ -97,7 +98,9 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 		logFile.close();
 		logFile.clear();
 		
-		string strAfter("/home/shrikant/Desktop/MPA/Log/interpola4Ecorr.log");
+		//string strAfter("/home/shrikant/Desktop/MPA/Log/interpola4Ecorr.log");
+		string strAfter = ReadInput("DIR:LOGDIR") + "interpola4Ecorr.log";
+		
 		logFile.open( strAfter.data(), ios::out | ios::app );
 		for( i=0; i < iCount1; i++ )
 		{

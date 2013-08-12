@@ -66,10 +66,15 @@ string elements[] = { "", "H", "HE", "LI", "BE", "B", "C", "N", "O", "F", \
                       , "LU", };
 
 // directory paths
+string strInputDir = ReadInput( "DIR:INPUTDIR" );
+string strLogDir = ReadInput( "DIR:LOGDIR" );
+
 /************************************************
  * CHANGE PATH BELOW 
  ***********************************************/
-string strGrid_dir( "/home/shrikant/Desktop/MPA/Files/" );
+//string strGrid_dir( "/home/shrikant/Desktop/MPA/Files/" );
+
+string strGrid_dir = strInputDir; 
 
 //string strGrid_dir( "/afs/mpa/data/mbergema/SIU/mod/grid/" );
 //string strGrid_dir_cnv( "/afs/mpa/data/mbergema/SIU/mod/grid/cnv/" );
@@ -77,7 +82,8 @@ string strGrid_dir( "/home/shrikant/Desktop/MPA/Files/" );
 /************************************************
  * CHANGE PATH BELOW 
  ***********************************************/
-string strGrid_dir_cnv( "/home/shrikant/Desktop/MPA/Files/" );
+//string strGrid_dir_cnv( "/home/shrikant/Desktop/MPA/Files/" );
+string strGrid_dir_cnv = strInputDir;
 
 // Initialising uninitialiased variables
 if( strRange.empty())   {   strRange.append( "HALPHA" );    }
@@ -470,7 +476,9 @@ int iPlot=0;
 if ( iPlot == 1)
 {
 	ofstream logFile;
-	string strThrWave("/home/shrikant/Desktop/MPA/Log/thrwave.log");
+	//string strThrWave("/home/shrikant/Desktop/MPA/Log/thrwave.log");
+	string strThrWave = strLogDir + "thrwave.log";
+	
 	logFile.open( strThrWave.data(), ios::out);
 	for( int i=0; i< iWaveCnt; i++)
 	{
@@ -771,7 +779,9 @@ nexta:
 	if ( iPlot == 1)
 	{
 		ofstream logFile;
-		string strThrFlux("/home/shrikant/Desktop/MPA/Log/thrflux.log");
+		//string strThrFlux("/home/shrikant/Desktop/MPA/Log/thrflux.log");
+		string strThrFlux = strLogDir + "thrflux.log";
+		
 		logFile.open( strThrFlux.data(), ios::out );
 		for( int i=0; i< iFluxCnt; i++)
 		{
@@ -821,7 +831,9 @@ iPlot=0 ;
 if ( iPlot == 1)
 {
 	ofstream logFile;
-	string strThrFlux("/home/shrikant/Desktop/MPA/Log/thrflux.log");
+	//string strThrFlux("/home/shrikant/Desktop/MPA/Log/thrflux.log");
+	string strThrFlux = strLogDir + "thrflux.log";
+	
 	logFile.open( strThrFlux.data(), ios::out );
 	for( int i=0; i< iFluxCnt; i++)
 	{
