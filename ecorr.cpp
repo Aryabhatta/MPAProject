@@ -99,34 +99,12 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 	// Interpolation
 	interpol( fThrData, fThrWave, iThrElem, fTxx, fTyy, iCount1 );
 	
-	// Plot before interpol
-	int iPlot = 0; 
-	if( iPlot == 1)
-	{
-		ofstream logFile;
-		//string strBefore("/home/shrikant/Desktop/MPA/Log/interpolb4Ecorr.log");
-		string strBefore = ReadInput("DIR:LOGDIR") + "interpolb4Ecorr.log";
-		
-		logFile.open( strBefore.data(), ios::out );
-		for( i=0; i < iCount1; i++ )
-		{
-			logFile << fThrWave[i] << "\t" << fThrData[i] << endl;			
-		}
-		logFile.close();
-		logFile.clear();
-		
-		//string strAfter("/home/shrikant/Desktop/MPA/Log/interpola4Ecorr.log");
-		string strAfter = ReadInput("DIR:LOGDIR") + "interpola4Ecorr.log";
-		
-		logFile.open( strAfter.data(), ios::out | ios::app );
-		for( i=0; i < iCount1; i++ )
-		{
-			logFile << fTxx[i] << "\t" << fTyy[i] << endl;			
-		}
-		logFile.close();
-		logFile.clear();
-	}
-	
+    // log for plotting - 2nd argument determines to log or not
+    createLog( "interpolb4Ecorr.log", false, fThrWave, iCount1, fThrData, iCount1 );
+    
+    // log for plotting - 2nd argument determines to log or not
+    createLog( "interpola4Ecorr.log", false, fTxx, iCount1, fTyy, iCount1 );
+
 	float fSigmaY = fSigma * 2; // CHANGE:Assuming that sig is not an array & why is it indexed in ecorr.pro?
 	BYTE mmm[iCount1];
 	

@@ -596,25 +596,10 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         }
         bError = false;
 */
+       
+        // log Observed Spectrum for plotting - 2nd argument determines to log or not
+        createLog( "ObsSpectrum.log", false, fWavelen, iElements, fData, iElements );
         
-        // PLOT Observed Spectrum
-        int iPlot = 0; // change iPlot to 1 if you want to plot
-        if( iPlot == 1)
-        {
-			ofstream logFile;
-			// Logs the observed spectra at standard log directory
-			//string strObsSpectra("/home/shrikant/Desktop/MPA/Log/ObsSpectrum.log");
-			string strObsSpectra = strLogDir + "ObsSpectrum.log";
-			
-			logFile.open( strObsSpectra.data(), ios::out );
-			for( int i=0; i< iElements; i++)
-			{
-				logFile << fWavelen[i] << "\t" << fData[i] << endl;
-			}
-			logFile.close();
-			logFile.clear();        	
-        }        
-
         /**************************************************************************
          * !!! Important !!!
          * If you are commenting/uncommenting LFP, remember to reflect the changes
@@ -623,25 +608,9 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
         // Call to lfp (with thereotical spectra & values of Teff, Logg, Logz & fXi         		
 		bError = lfp( &fSx, &fSy, &iThrElem, fTeff, fLogg, fLogz, fXi, fEps_dev, fGauss, fGamma, iExtrapol, strGrid, strRange, iNomessage, iCnvl, iNomc );
 		
-		iPlot = 1;
-		if( iPlot == 1 )
-		{	
-			ofstream logFile;
-			
-			// Logging thereotical spectra in log directory
-			
-			//string strThrSpectra("/home/shrikant/Desktop/MPA/Log/thrSpectrum.log");
-			string strThrSpectra = strLogDir + "thrSpectrum.log";
-			
-			logFile.open( strThrSpectra.data(), ios::out );
-			for( int i=0; i< iThrElem; i++)
-			{
-				logFile << fSx[i] << "\t" << fSy[i] << endl;
-			}
-			logFile.close();
-			logFile.clear();
-		}
-		
+		// log Thereotical Spectrum for plotting - 2nd argument determines to log or not
+        createLog( "thrSpectrum.log", true, fSx, iThrElem, fSy, iThrElem );
+        		
 		if( bError || iThrElem == 0 ) 
         {
             // goto NEXT iteration
@@ -663,41 +632,16 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
             iFlag = 1;
         }
         
-        iPlot = 0;
-        if( iPlot == 1 )
-        {
-        	logFile.close();
-        	logFile.clear();
-        	string strFileSpecsb4 = strFileSpecs + "before.log";
-        	logFile.open( strFileSpecsb4.data() , ios::out );
-        	logFile << "Before convolution" << endl;
-        	for(iCntr1=0;iCntr1<iElements;iCntr1++)
-        	{
-        		logFile << fSx[iCntr1] << "\t" << fSy[iCntr1] << endl;
-        	}
-        	logFile.close();
-        	logFile.clear();
-        }
-        
+        // log thereotical Spectrum before convolution - 2nd argument determines to log or not
+        createLog( "before.log", false, fSx, iThrElem, fSy, iThrElem );
+                
         if( iConv )
         {
             gaussFold( fSx, fSy, iElements, ( IdlMean(arrWr,2)/fRes) );
         }
         
-         iPlot = 0;
-         if( iPlot == 1 )
-         {
-        	string strFileSpecsa4 = strFileSpecs + "after.log";
-            logFile.open( strFileSpecsa4.data()  , ios::out );
-            logFile << "After convolution" << endl;
-        	for(iCntr1=0;iCntr1<iElements;iCntr1++)
-        	{
-        		logFile << fSx[iCntr1] << "\t" << fSy[iCntr1] << endl;
-        	}
-        	logFile.close();
-        	logFile.clear();
-            logFile.open( strFileSpecs.data() , ios::out  );
-        }
+        // log thereotical Spectrum before convolution - 2nd argument determines to log or not
+        createLog( "after.log", false, fSx, iThrElem, fSy, iThrElem );
          
         float  fRy[iElements];
         

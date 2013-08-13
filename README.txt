@@ -23,13 +23,9 @@ GENERAL INSTRUCTIONS:
 
 INSTRUCTIONS FOR RUNNING THE PROJECT:
 
-1. Change the file paths in file getchi.cpp & lfp.cpp. I have marked the places where the paths need to by changed by below block
+1. Change the file paths in ProgramInputs.txt. There are different sections in ProgramInputs.txt viz. ARG- arguments to be passed in the program, DIR- specifying path for directories including input directory & log directory, FILE- for filenames (FITS file, File of grid points)
 
-/************************************************
- * CHANGE PATH BELOW 
- ***********************************************/
-
-Please change the path for the line just below this comment block.
+Please change the path appropriately to run this software on your system.
 
 2. Build the project by doing 'make'. Creates executable 'project'
 

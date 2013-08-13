@@ -28,6 +28,42 @@ using namespace std;
 
 string ReadInput( string name );
 
+// Routine to log array for plotting it afterwards with gnuplot
+// NOTE: USE bPlot AS SWITCH TO ALLOW LOGGING OR NOT
+template<class T>
+void createLog( string FileName, bool bPlot, T * Arr1, int iArrSz1, T * Arr2=0, int iArrSz2=0 )
+{
+	if( bPlot == false )
+		return;
+	
+	ofstream logFile;
+	
+	// Logs the observed spectra at standard log directory
+	string strLogDir = ReadInput( "DIR:LOGDIR" );
+	
+	string strFileSpecs = strLogDir + FileName;
+	
+	logFile.open( strFileSpecs.data(), ios::out );
+	
+	if( iArrSz2 != 0) // need to log both arrays
+	{	
+		for( int i=0; i< iArrSz1; i++)
+		{
+			logFile << Arr1[i] << "\t" << Arr2[i] << endl;
+		}
+	}
+	else // logging only one array
+	{
+		for( int i=0; i< iArrSz1; i++)
+		{
+			logFile << Arr1[i] << endl;
+		}
+	}
+	
+	logFile.close();
+	logFile.clear();
+}
+
 void integ( double * X, double * Y, int iArraySz, double * dRes );
 
 void gaussFold( float * fWavelen, float * fFlux, int iSize, float fSigma, int iRadius = 2 ); 

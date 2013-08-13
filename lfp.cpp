@@ -484,21 +484,8 @@ for( int i=0; i< iWaveCnt; i++)
 	*(*fSx+i) = fWave[i];
 }
 
-int iPlot=0;
-if ( iPlot == 1)
-{
-	ofstream logFile;
-	//string strThrWave("/home/shrikant/Desktop/MPA/Log/thrwave.log");
-	string strThrWave = strLogDir + "thrwave.log";
-	
-	logFile.open( strThrWave.data(), ios::out);
-	for( int i=0; i< iWaveCnt; i++)
-	{
-		logFile << fWave[i] << endl;
-	}
-	logFile.close();
-	logFile.clear();
-}
+// log for plotting - 2nd argument determines to log or not
+createLog( "thrwave.log", false, fWave, iWaveCnt );
 
 float * flux; int iFluxCnt;
 int iHdu = 3;
@@ -789,22 +776,9 @@ nexta:
 	//IDL Statement - y = flux( descr(iIdx));
 	bSucess = readGridFlux(strGridFileSpecs, flux, iIdx);
 	
-	int iPlot=0 ;
-	if ( iPlot == 1)
-	{
-		ofstream logFile;
-		//string strThrFlux("/home/shrikant/Desktop/MPA/Log/thrflux.log");
-		string strThrFlux = strLogDir + "thrflux.log";
-		
-		logFile.open( strThrFlux.data(), ios::out );
-		for( int i=0; i< iFluxCnt; i++)
-		{
-			logFile << flux[i] << endl;
-		}
-		logFile.close();
-		logFile.clear();
-	}
-	
+	// log for plotting - 2nd argument determines to log or not
+    createLog( "thrflux.log", false, flux, iFluxCnt);
+    	
 	if( !bSucess )
 	{
 		cout << "Some error reading flux for flux no: " << iIdx << endl;
@@ -841,21 +815,8 @@ nexta:
 	
 } // endfor
 
-iPlot=0 ;
-if ( iPlot == 1)
-{
-	ofstream logFile;
-	//string strThrFlux("/home/shrikant/Desktop/MPA/Log/thrflux.log");
-	string strThrFlux = strLogDir + "thrflux.log";
-	
-	logFile.open( strThrFlux.data(), ios::out );
-	for( int i=0; i< iFluxCnt; i++)
-	{
-		logFile << *(*fSy+i) << endl;
-	}
-	logFile.close();
-	logFile.clear();
-}
+// log for plotting - 2nd argument determines to log or not
+createLog( "thrflux.log", false, *fSy, iFluxCnt);
 	
 // free_lun
 

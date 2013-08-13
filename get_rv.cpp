@@ -23,8 +23,6 @@
 
 using namespace std;
 
-#define PLOT 0
-
 // Routine to calculate the radial velocity
 float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, float * ThrFlux, int iThrElem, float * fXr,  
 		      int iNomessage,int iAbsolute, float fEps, int iLog)	
@@ -451,22 +449,8 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     
     ofstream logFile;
     
-    //string strb4("/home/shrikant/Desktop/MPA/Log/interpolb4.log");
-    //string stra4("/home/shrikant/Desktop/MPA/Log/interpola4.log");
-    
-    string strb4 = ReadInput("DIR:LOGDIR") + "interpolb4.log";
-    string stra4 = ReadInput("DIR:LOGDIR") + "interpola4.log";
-    
-    if( PLOT )
-    {    
-	    logFile.open(strb4.data(),ios::out);    
-	    for( i=0; i< iObsSz; i++)
-	    {
-	    	logFile << fThrW[i] << "\t" << fThrF[i] << endl;
-	    }
-	    logFile.close();
-	    logFile.clear();
-    }    
+    // log for plotting - 2nd argument determines to log or not
+    createLog( "interpolb4.log", false, fThrW, iObsSz, fThrF, iObsSz );
     
     float fYAarr[lNrPix], fYBarr[lNrPix];
       
@@ -476,7 +460,8 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     interpol( fObsF, fObsW, iObsSz, dNX_SP, fYAarr, lNrPix );
     interpol( fThrF, fThrW, iThrSz, dNX_RV, fYBarr, lNrPix );
     
-    if( PLOT )
+    string stra4 = ReadInput("DIR:LOGDIR") + "interpola4.log";
+    if( false )
     {
 	    logFile.open( stra4.data(), ios::out );
 	    for( i=0; i< lNrPix; i++)
@@ -591,7 +576,7 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     	dNY_SP[i] = dNY_SP[i]/ dNorm_SP;
     }
     
-    if( PLOT )
+    if( false )
     {
 //    	string strNyrv("/home/shrikant/Desktop/MPA/Log/RV.log");
 //    	string strNysp("/home/shrikant/Desktop/MPA/Log/SP.log");

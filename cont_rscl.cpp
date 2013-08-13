@@ -247,33 +247,11 @@ void cont_rscl( float *  fObsWave, float * fObsData, int iObsElem, float * fThrW
 																 // Confirm if the no of points in theoretical & observed spectra 
 																 // will always be same or not
 	
-	int iPlot = 0;
-	
-	if( iPlot == 1 )
-	{
-		ofstream logFile;
-		string strThr = ReadInput("DIR:LOGDIR") + "thr.log";
-		
-		//string strObs("/home/shrikant/Desktop/MPA/Log/obs.log");
-		string strObs = ReadInput("DIR:LOGDIR") + "obs.log";
-		
-		logFile.open( strThr.data(), ios::out );
-		for( i=0; i < iCount2; i++)
-		{
-			logFile << fThrWlog[i] << "\t" << fThrD[i] << endl;
-		}
-		logFile.close();
-		logFile.clear();
-		
-		logFile.open( strObs.data(), ios::out );
-		for( i=0; i < iCount2; i++)
-		{
-			logFile << fObsWlog[i] << "\t" << fT[i] << endl;
-		}
-		logFile.close();
-		logFile.clear();
-	}
-	
+    // log for plotting - 2nd argument determines to log or not
+    createLog( "thr.log", false, fThrWlog, iCount2, fThrD, iCount2 );
+    
+    // log for plotting - 2nd argument determines to log or not
+    createLog( "obs.log", false, fObsWlog, iCount2, fT, iCount2 );			
 		
 	float fXm = ( IdlMax( fObsWlog, iCount1 ) + IdlMin( fObsWlog, iCount1 ) ) * 0.5f;
 	
@@ -743,23 +721,8 @@ iterate:
 		}
 	}
 	
-	iPlot = 0;
-		
-	if( iPlot == 1 )
-	{
-		ofstream logFile;
-		
-		//string strRy("/home/shrikant/Desktop/MPA/Log/ry.log");
-		string strRy = ReadInput("DIR:LOGDIR") + "ry.log";
-				
-		logFile.open( strRy.data(), ios::out );
-		for( i=0; i < iCount1; i++)
-		{
-			logFile << fRy[i] << endl;
-		}
-		logFile.close();
-		logFile.clear();
-	}
+    // log for plotting - 2nd argument determines to log or not
+    createLog( "ry.log", false, fRy, iCount1 );
 	
 	return; 
 }
