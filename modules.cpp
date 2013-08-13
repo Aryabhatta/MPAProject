@@ -69,6 +69,8 @@ string ReadInput( string name )
 	{	
 		getline( inputFile, strRow );
 		
+		strTrim( strRow, 2 );
+		
 		// Ignore comments
 		if( strRow.substr(0,1) == ";" )
 			continue;
@@ -347,7 +349,7 @@ void gaussFold( float * fWavelen, float * fFlux, int iSize, float fSigma, int iR
     // SMOOTHING OF FLUX WITH A GAUSSIAN PROFILE
 	// IMPLEMENTATION
 	
-	// ****************** NOTE ********************
+	// ****************** NOTE **********************
 	// Assuming a radius of 2 by default, need to check
 	// Content taken from
 	// http://homepages.inf.ed.ac.uk/rbf/HIPR2/gsmooth.htm
@@ -364,11 +366,17 @@ void gaussFold( float * fWavelen, float * fFlux, int iSize, float fSigma, int iR
 		kernel[i] = 2 * (1/ (sqrt(2*M_PI) * fSigma)) * exp(expo); 
 	}
 	
+	string strVerbose = ReadInput( "ARG:VERBOSE" );
+	int iVerbose = atoi( strVerbose.c_str());
+	
 	// print kernel
-	cout << "Printing Gaussian Kernel" << endl;
-	for(int i =0; i < kSize; i++)
+	if( iVerbose > 0 )
 	{
-		cout << kernel[i] << endl;
+		cout << "Printing Gaussian Kernel" << endl;
+		for(int i =0; i < kSize; i++)
+		{
+			cout << kernel[i] << endl;
+		}
 	}
 	
 	// temporary array to hold smoothed flux

@@ -19,33 +19,36 @@
 #include <string>
 #include <fitsio.h>
 #include <fftw3.h>
-//#include "fftw++.h"
 #include "get_rv.hpp"
 
 using namespace std;
-//using namespace fftwpp;
 
 #define PLOT 0
 
 // Routine to calculate the radial velocity
-// copy header part from get_rv.pro
 float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, float * ThrFlux, int iThrElem, float * fXr,  
 		      int iNomessage,int iAbsolute, float fEps, int iLog)	
 {
     float fXrv = 0.0;
     int i  = 0;
     
+    string strVerbose = ReadInput( "ARG:VERBOSE" );
+    int iVerbose = atoi( strVerbose.c_str() );
+    
+    if( iVerbose > 0 )
     cout << endl << "===================== in GETRV===================================" << endl;
+    
     if( fEps == 0.0 ) 
     {     
     	fEps = 8 * pow(10,-7);
+    	if( iVerbose > 0 )
     	cout << "fEps = " << fEps << endl;
     } // Min Floating accuracy
     
     // iAbsolute is default 0
     // iNomessage is default 0
     
-//    fXr[0] = 6457.48;// dummy TODO change
+//    fXr[0] = 6457.48;// dummy 
 //    fXr[1] = 6500;// dummy
     
     float * fObsW;
@@ -55,7 +58,6 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
     int iObsSz;
     int iThrSz;
     
-
     if( fXr[0] != 0.00 && fXr[1]!= 0.00 )
     {
     	int IndexArr[ iObsElem ];
@@ -98,6 +100,7 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
     	fObsW = new float[ iObsElem ];
     	fObsF = new float[ iObsElem ];
     	iObsSz = iObsElem;
+    	
     	for( i=0; i< iObsElem; i++)
     	{
     		fObsW[i] = ObsWave[i];
@@ -117,9 +120,9 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
         }
     }
     
-    	/* 
-	     * IF NO OF PARAMETERS < 2, LOAD SOLAR FLUX SPECRUM AS REFERENCE
-	     */       
+	/* 
+     * IF NO OF PARAMETERS < 2, LOAD SOLAR FLUX SPECRUM AS REFERENCE
+     */       
 
     if( iThrElem==0 )
     {
@@ -214,10 +217,13 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
         return -1;
     }
     
-
-    double dC =299792.458;	// light velocity, km/s 
-    cout << "iCOnvSz:" << iConvSz;
-    cout << "ALL IS WELL !!" << endl;
+    double dC =299792.458;	// light velocity, km/s
+    
+    if( iVerbose > 0 )
+    {
+    	cout << "iCOnvSz:" << iConvSz;
+    	cout << "ALL IS WELL !!" << endl;
+    }
     
     for( i = 0; i < iConvSz; i++ )
     {
@@ -228,10 +234,14 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
     float fConvYA[ iConvSz ];
     
     float fMaxCY = IdlMax( fConvY, iConvSz);
+    
+    if( iVerbose > 0 )
     cout << "fMaxCY" << fMaxCY << endl;
 
     if( abs( IdlMin( fConvY, iConvSz ) ) > fMaxCY )
         fMaxCY = abs( IdlMin( fConvY, iConvSz ) );
+    
+    if( iVerbose > 0 )
     cout << "fMaxCY" << fMaxCY << endl;
 
     for( i=0; i < iConvSz; i++ )
@@ -244,9 +254,10 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
     //fXrv = fConvX[ (int)dC ]; // corresponding to rv=cx(!C) in get_rv.cpp
                         // in Idl , ! is used to reference system variabbles
     
-    // Above Idl syntax materialises to fConvX[0], check TODO
+    // Above Idl syntax materialises to fConvX[0]
     fXrv = fConvX[ 0 ]; // corresponding to rv=cx(!C) in get_rv.cpp
     
+    if( iVerbose > 0 )
     cout << "fXrv" << fXrv << endl;
     
     int iSt = 1;
@@ -296,6 +307,7 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
     }
 
     float fXe = 0, fYe = 0;
+    
     // Call to EXTREMUM_B line 215, get_rv.pro  -CHANGE-
     iSt=2;
     if( iSt == 1 )
@@ -304,6 +316,7 @@ float get_rv( float * ObsWave, float * ObsFlux, int iObsElem, float * ThrWave, f
         fCoef = fYe;        
     }
     
+    if( iVerbose > 0 )
     cout << endl << "fXrv:" << fXrv << endl;
     
     // delete memory allocated in Log_Lin_Corr
@@ -323,8 +336,14 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
 {
 	// LOG-LIN-CONVOLUTION: X -> LOG(X) -> RESAMPLING OF (LOG(X),Y) -> SCALE FOR RV-DET
 	
-	cout << "In log lin corr" << endl;
-	cout << "ObsSz: " << iObsSz << " ThrSz: " << iThrSz << endl;
+	string strVerbose = ReadInput( "ARG:VERBOSE" );
+	int iVerbose = atoi( strVerbose.c_str() );
+	
+	if( iVerbose > 0 )
+	{
+		cout << "In log lin corr" << endl;
+		cout << "ObsSz: " << iObsSz << " ThrSz: " << iThrSz << endl;
+	}
 
     // defaults for bComplete, iNomc & eps set in header file
     int i =0;
@@ -386,11 +405,14 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     
     // if resampling distance < than eps, eps taken as new resampling distance
     fRdist = std::max(fRdist, eps);
+    
+    if( iVerbose > 0 )
     cout << "fRdistOW:" << fRdistOW << " fRdistTW:" << fRdistTW << " max:" << fRdist << endl;
 
     long int lNrPix = abs((fOW_last - fOW_start)/fRdist) + 1L;
     long int lNrPixChk = abs((fTW_last - fTW_start)/fRdist) + 1L;
     
+    if( iVerbose > 0 )
     cout << "lNrPix:" <<lNrPix << " lNrPixChk:" <<lNrPixChk << endl;
     
     if( lNrPix != lNrPixChk )
@@ -421,11 +443,14 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     // same size as fObsWave & fThrWave // Assuming, recheck TODO
     if( iNomc == 0 )
     {
-        cout << "Points for FFT: " << lNrPix << endl;
+        cout << endl << "Points for FFT: " << lNrPix << endl;
+        
+        if( iVerbose > 0 )
         cout << "Interpolation:" << endl;
     } 
     
     ofstream logFile;
+    
     //string strb4("/home/shrikant/Desktop/MPA/Log/interpolb4.log");
     //string stra4("/home/shrikant/Desktop/MPA/Log/interpola4.log");
     
@@ -474,18 +499,19 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     *fConvX = new float [ lNrPix ];
     *iConvSz = lNrPix;
     
+    if( iVerbose > 0 )
     cout << "lShift" << lShift << endl;
 
     double dMaxNxrv = IdlMax( dNX_RV, lNrPix );
     double dTemp = (dMaxNxrv - dNX_RV[0])/2.0d + dNX_RV[0];
     
+    if( iVerbose > 0 )
     cout << "dMaxNxrv:" << dMaxNxrv << " dTemp:" << dTemp << " dNX_RV[0]: " << dNX_RV[0] << endl;
 
     // ConvX
     for( i = 0; i < lNrPix; i++ )
     {
         *(*fConvX + i) = dNX_SP[i] - dTemp;
-     //   cout << *(*fConvX + i) << " ";
     }
 
     double dNorm_SP = 0.0, dNorm_RV = 0.0;
@@ -494,13 +520,13 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
         if( iNomc == 0 )
             cout << "Normalization of correlation function" << endl << endl;
     
-        //double dMean_SP[ lNrPix], dMean_RV[ lNrPix ];
         double * dMean_SP = new double [ lNrPix ];
         double * dMean_RV = new double [ lNrPix ];
         
         integ( dNX_SP, dNY_SP, lNrPix, dMean_SP);
         integ( dNX_RV, dNY_RV, lNrPix, dMean_RV);
         
+        if( iVerbose > 0 )
         cout << "First elem: " << dMean_SP[0] << " Last element:" << dMean_SP[lNrPix-1] << endl; 
         
         double dDiv1 = IdlMax( dNX_SP, lNrPix) - dNX_SP[0];
@@ -533,9 +559,8 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
                      (dTotal_NYRV - 0.5 * (dNY_RV[0] * dNY_RV[0] + \
                       dNY_RV[lNrPix-1] * dNY_RV[lNrPix-1] )));
     
-        if( iNomc == 0 )
-        {
-            //cout << "Mean sp = " << 
+        if( iVerbose > 0 )
+        {	
             cout << " Norm sp = " << dNorm_SP ;
             cout << " Norm rv = " << dNorm_RV << endl;
         }
@@ -549,12 +574,14 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
         dNorm_RV = 1.0;
     }
 
-    if( iNomc == 0 )
+    if( iVerbose > 0 )
         cout << "FFT (RV-standard and spectrum)" << endl;
 
     // FFT functions to calculate the fourier & inverse fourier transforms
     // need to zero down on which library to use
-    // functions calculate the value of fConvY - important   
+    // functions calculate the value of fConvY - important
+    
+    if( iVerbose > 0 )
     cout << "lnrpix" << lNrPix << endl;
     
     // prepare arrays for FFT
@@ -688,8 +715,6 @@ bool Log_Lin_Corr( float * fObsWave, float * fObsF, int iObsSz, float * fThrWave
     for( i=0; i< lNrPix; i++)
     {
     	*(*fConvY + i) = (( *(*fConvX + (lNrPix-1))-*(*fConvX + 0) )/lNrPix) * ( *(*fConvY + i) );
-    	//cout << *(*fConvY + i) << " ";
-    	
     }
     
     return bError;

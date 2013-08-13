@@ -9,6 +9,11 @@
 ; Fiber ID
 FID = 500
 
+; Verbose level - determines how many messages are print during execution
+; Possible levels - 0 / 1 / 2
+; 0- very minimal, absolutely essential, 1-more msgs than level 0, 2- more than 1
+VERBOSE=0
+
 ; Section for directories
 #DIR
 

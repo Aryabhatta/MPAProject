@@ -26,17 +26,20 @@
 #include "readGridfile.hpp"
 using namespace std;
 
-#define print 0
-
-float round_to_decimal(float f) {
+float round_to_decimal(float f) 
+{
     char buf[42];
     sprintf(buf, "%.7g", f); // round to 7 decimal digits
-    //cout << "Buf = " << buf << endl;
     return (float)atof(buf);
 }
+
 bool lfp( float ** fSx, float ** fSy, int * iThrElem, float fTeff, float fLogg, float fLogz, float fXi, float fEps_dev[2], float fGauss, float fGamma, 
 		int iExtrapol, string strGrid, string strRange, int iNomessage,int iCnvl, int iNomc )
 {
+	
+// get the verbose level
+string strVerbose = ReadInput( "ARG:VERBOSE"); 
+int iVerbose = atoi( strVerbose.c_str() );
 
 iNomessage = 0;
 iCnvl = 0;
@@ -70,17 +73,20 @@ string strInputDir = ReadInput( "DIR:INPUTDIR" );
 string strLogDir = ReadInput( "DIR:LOGDIR" );
 
 /************************************************
- * CHANGE PATH BELOW 
+ * Changing path for input directory:
+ * Go to ProgramInputs.txt. Change the path in
+ * section #DIR against INPUTDIR 
  ***********************************************/
 //string strGrid_dir( "/home/shrikant/Desktop/MPA/Files/" );
-
 string strGrid_dir = strInputDir; 
 
 //string strGrid_dir( "/afs/mpa/data/mbergema/SIU/mod/grid/" );
 //string strGrid_dir_cnv( "/afs/mpa/data/mbergema/SIU/mod/grid/cnv/" );
 
 /************************************************
- * CHANGE PATH BELOW 
+ * Changing path for input directory:
+ * Go to ProgramInputs.txt. Change the path in
+ * section #DIR against INPUTDIR 
  ***********************************************/
 //string strGrid_dir_cnv( "/home/shrikant/Desktop/MPA/Files/" );
 string strGrid_dir_cnv = strInputDir;
@@ -215,25 +221,28 @@ std::vector<container> gArray;
 Read_LF_Grid( strGriddef, gArray , iNomc);
 
 // Status
-cout << "No of elements in vector:" << gArray.size() << endl;
-cout << "Snapshot of vector array:" << endl;
-
-// Iterating over all the elements in vector
-cout << "gArray.p" << " gArray.def" << " gArray.unit" << " gArray.ion" << " gArray.min" << " gArray.delta" << " gArray.n" << endl;
-
-for( int i = 0; i< gArray.size() ; i++ )
+if( iVerbose > 0 )
 {
-//    cout << gArray[i].p<<"\t"<<gArray[i].def << "\t" << gArray[i].unit << "\t" << gArray[i].ion <<"\t\t" << gArray[i].min<< "\t"<< gArray[i].delta << "\t"<<gArray[i].n<< endl;
-	cout << setw(9) << left << gArray[i].p;
-	cout << setw(11) << left << gArray[i].def;
-	cout << setw(12) << left << gArray[i].unit; 
-	cout << setw(11) << left << gArray[i].ion;
-	cout << setw(11) << left << gArray[i].min;
-	cout << setw(13) << left << gArray[i].delta;
-	cout << setw(9) << left << gArray[i].n<< endl;
+	cout << "No of elements in vector:" << gArray.size() << endl;
+	cout << "Snapshot of vector array:" << endl;
+	
+	// Iterating over all the elements in vector
+	cout << "gArray.p" << " gArray.def" << " gArray.unit" << " gArray.ion" << " gArray.min" << " gArray.delta" << " gArray.n" << endl;
+	
+	for( int i = 0; i< gArray.size() ; i++ )
+	{
+		// Printing with specific format
+		cout << setw(9) << left << gArray[i].p;
+		cout << setw(11) << left << gArray[i].def;
+		cout << setw(12) << left << gArray[i].unit; 
+		cout << setw(11) << left << gArray[i].ion;
+		cout << setw(11) << left << gArray[i].min;
+		cout << setw(13) << left << gArray[i].delta;
+		cout << setw(9) << left << gArray[i].n<< endl;
+	}
 }
 
-if( print )
+if( iVerbose == 2 )
 cout << "All is working well till call to Read_lf_grid()" << endl;
 
 /* COMMENTS FROM ORIGINAL IDL FILE lfp.pro
@@ -276,7 +285,7 @@ fWmax = fWcen[iIdx] + fWran[iIdx];
 
 // No of parameters
 iNpar = gArray.size();
-nModel = 1; // dnt knw why it is defined Long in .pro TODO: what exactly is no of models?
+nModel = 1; 
 
 iIdx = 0;
 int iNoElements = 0;
@@ -309,7 +318,6 @@ for( int i = 0; i< iNpar; i++ )
 
 iExtrapol = 0;
 double dP[ iNpar ];
-//float dP[ iNpar ];
 
 // counting no of elements in fEps_dev
 int iSizefEps = 2; // Hardcoding here, for use further
@@ -339,16 +347,18 @@ for( int i = 0; i< iNpar ; i++)
     else if ( strPdef[i] == "GAMMA" )  { dP[i] = fGamma;} 
     else
     {
-        // RECHECK THIS LOGIC, MAY BE INCONSISTENT TODO
+    	// Make sure below logic works correctly by debugging the code
         if( fEps_dev[0] != 0 )
         {
             // lindgen intricacies
             long int lindgenArr [iSizefEps/2] ; // declaring size of array // evaluates to 1, since iSizeofEps=2
             int k = 0;
+            
             for( k =0; k < (iSizefEps/2); k++ )
             {
                 lindgenArr[k] = k;              // lindgen property
             }
+            
             string elems[k];
             for( int l=0; l<k; l++ )
             {
@@ -373,6 +383,7 @@ for( int i = 0; i< iNpar ; i++)
             if( iCntr == 1 )
             {
                 dP[i] = (double) fEps_dev[2*iIdx+1];
+                
                 // little hack to avoid problems while converting from float to double
                 dP[i] = dP[i] + 0.0000000001;            	
                 cout << endl << "Calculating dP[i] depeding on fEpd_dev !!!" << endl;
@@ -441,7 +452,8 @@ for( int i = 0; i< iNpar ; i++)
     } 
 }
 
-cout << endl << "No of Models = " << nModel << endl;
+if( iVerbose == 1)
+	cout << endl << "No of Models = " << nModel << endl;
 
 /*
  * Working Perfectly till here
@@ -493,7 +505,9 @@ int iHdu = 3;
 int naxis1, naxis2;
 
 bSucess = readGridDim( strGridFileSpecs, iHdu, &naxis1, &naxis2 );
-cout << "Dimensions of HDU: " << iHdu << " Naxis1: " << naxis1 << " Naxis2: " << naxis2 << endl;
+
+if( iVerbose > 0 )
+	cout << "Dimensions of HDU: " << iHdu << " Naxis1: " << naxis1 << " Naxis2: " << naxis2 << endl;
 
 // naxis1 = #cols = #wavelengths
 flux = new float[ naxis1 ];
@@ -529,15 +543,15 @@ for( int i=0; i< nModel; i++)
 		// setting the ith row of xpar
 		xpar[i][j] = gArray[j].min + (iIdx * gArray[j].delta);
 		
-		if( print )
-		if( i==nModel-1)
+		if( iVerbose == 2 )
+		if( i == nModel-1)
 		{	
 			cout << xpar[i][j] << " " ;
 		}
 	}
 }
 
-if( print )
+if( iVerbose == 2 )
 cout << endl << "Xpar array created with " << nModel << " rows & " << iNpar << " coloumns" << endl;
 
 iIdx = 0;
@@ -545,13 +559,13 @@ for( int i=0; i< iNpar; i++)
 {
 	 iIdx += (gArray[i].i * nFac2[i]);
 	 
-	 if( print )
+	 if( iVerbose == 2 )
 	 cout << "I:" << i << "  gArray[i].i:" << gArray[i].i << " nFac1[i]:"<< nFac1[i] 
 	 << " nFac2[i]:"<< nFac2[i] << " iIdx: " << iIdx << endl; 
 }
 
-//if( print )
-cout << endl << "IDX @ the end of loop: " << iIdx << endl;
+if( iVerbose > 0 )
+	cout << endl << "IDX @ the end of loop: " << iIdx << endl;
 
 // Redundant logic to directly read from HDU2
 bSucess = readGridDim( strGridFileSpecs, iHdu, &naxis1, &naxis2 );
@@ -567,7 +581,7 @@ for( int i=0; i<iNpar; i++)
 	p0[i] = xpar[iIdx][i]; //iIdx th coloumn copied
 //	p0[i] = pars[i]; //Reading from HDU 2
 	
-	//if( print )	
+	if( iVerbose > 0 )	
 	cout << "P0[" << i << "]: " << p0[i] << endl;
 }
 
@@ -576,10 +590,10 @@ for( int i=0; i<iNpar; i++)
 {
 	dDp[i] = dP[i] - p0[i];
 	
-	if( print )
+	if( iVerbose == 2 )
 	cout << "dP[" << i << "]: " << dP[i] << "\tdDp[" << i << "]: " << dDp[i] <<endl;
 
-	//if( print )
+	if( iVerbose > 0 )
 	cout << "dDp[" << i << "] = " << dDp[i] << endl;
 }
 
@@ -598,6 +612,7 @@ for(int i=0; i<iNpar; i++)
 //	if( i==4)
 //		x[0][4] = -1.4901161e-08;
 	
+	if( iVerbose > 0 )
 	cout << "x[1][i]: " << x[1][i] << " x[0][i]: " << x[0][i] << endl;  
 }
 
@@ -622,7 +637,6 @@ for(int i=0; i< iNpar; i++)
 }
  
 for(int i=0; i< iNpar2; i++)
-//for(int i=0; i< 1; i++)
 {
 	long addx[iNpar];
 	
@@ -772,7 +786,7 @@ nexta:
 	} // endif
 	
 	// READ FROM FITS FILE
-	//y = flux( descr(iIdx));
+	//IDL Statement - y = flux( descr(iIdx));
 	bSucess = readGridFlux(strGridFileSpecs, flux, iIdx);
 	
 	int iPlot=0 ;
@@ -802,10 +816,10 @@ nexta:
 	{	
 		dCoef = dCoef * x[addx[m]][m];
 		
-		if( print )
+		if( iVerbose == 2 )
 		cout <<  "addx[m]: " << addx[m] << endl;
 		
-		if( print )
+		if( iVerbose == 2 )
 		cout << "dCoef: " << dCoef << " x[addx[m]][m]: " << x[addx[m]][m] << endl; 
 	}
 	
@@ -858,17 +872,20 @@ if( iCnvl != 0 && (fExpo > 0 || fGauss > 0 || fRt > 0 || fGamma > 0 || fVsini > 
 
 if( !iNomessage )
 {
-	cout << endl << "strPdef" << "=";
-	for( int j=0; j<iNpar; j++)
+	if( iVerbose > 0 )
 	{
-		cout << dP[j] << " ";
+		cout << endl << "strPdef" << "=";
+		for( int j=0; j<iNpar; j++)
+		{
+			cout << dP[j] << " ";
+		}
+		cout << "  ";
+		for( int j=0; j<iNpar; j++)
+		{
+			cout << gArray[j].unit << " ";
+		}
+		cout << ";";	
 	}
-	cout << "  ";
-	for( int j=0; j<iNpar; j++)
-	{
-		cout << gArray[j].unit << " ";
-	}
-	cout << ";";	
 }
 
 delete [] fWave;

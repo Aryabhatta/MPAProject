@@ -23,7 +23,6 @@
 
 using namespace std;
 
-
 void Read_LF_Grid( string strGridDef, std::vector<container> &gArray, int iNomc)
 {
 
@@ -40,7 +39,7 @@ string elements[] = { "", "H", "HE", "LI", "BE", "B", "C", "N", "O", "F", \
 
 
 // Status
-cout << "Reading from grid definition file " << strGridDef << endl;
+cout << endl << "Reading from grid definition file " << strGridDef << endl;
 
 ifstream inputFile;     // for reading grid file
 

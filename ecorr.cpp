@@ -1,3 +1,19 @@
+/*************************************************************************
+*
+* Copyright:		Max Planck Institute for Astrophysics (MPA)
+* 
+* File:				ecorr.cpp
+* 
+* Routine Info:		
+*
+* Author:
+*
+* Modification 
+* Log:	    		
+*		        	
+*
+**************************************************************************/
+
 #include <iostream>
 #include <stdlib.h>
 #include "ecorr.hpp"
@@ -7,7 +23,7 @@ using namespace std;
 //------------------------------------------------------------------------------------
 // Fit Merit Function
 //------------------------------------------------------------------------------------
-//int iNomessage = 0, double dPn = 0, double dPp =0, float fWr=0,float fSigma = 0 );
+
 double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWave, float * fObsData, int iObsElem,
 		        int iXsigma, float * fRf, int iSzrf, BYTE * mask, int iSzmask, int iNoMessage, double dPn, 
 		        double dPp, float * fWr,float fSigma)
@@ -15,15 +31,16 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 	float fSmall = 0.00f;
 	int i = 0; // iterators for 'for' loop
 	
-	// mask for evaluation of parameter specific merits, mask scales with ox !!!
+	// Verbose level
+	string strVerbose = ReadInput( "ARG:VERBOSE" );
+	int iVerbose = atoi( strVerbose.c_str() );
 	
-	// KEYWORD SETTING
-//	if( iSzrf == 0) { fRf = (float *)malloc(sizeof(float) * (iObsElem + 1) );}
-//	if( iSzmask == 0 ) { mask = (BYTE * )malloc(sizeof(BYTE) * (iObsElem + 1));}
+	// mask for evaluation of parameter specific merits, mask scales with ox !!!
 	
 	// Some defualt settings
 	if( dPp == 0 ) { dPp = 5.0d; }
 	if( dPn == 0 ) { dPn = 5.0d; }
+	
 	// iNomessage set to 0 by default
 	
 	bool delFwr = false;
@@ -32,7 +49,7 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 		delFwr = true;
 		fWr = (float *) malloc( sizeof(float) * 2 );
 		fWr[0] = std::max( fThrWave[0], fObsWave[0] );
-		fWr[1] = std::min( fThrWave[ iThrElem-1], fObsWave[iObsElem-1]); // was going out of bound, why the hell it did not give any error?		
+		fWr[1] = std::min( fThrWave[ iThrElem-1], fObsWave[iObsElem-1]); 		
 	}
 	
 	if( fSigma == 0) { fSigma = 0.02; } // 2% tolerance
@@ -41,7 +58,7 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 	// Scale consistence  ---------------------------------------------------------------------------
 	//
 	
-	// How come the size of mp defined 1 in original code ?
+	// Why the size of mp is defined 1 in original code ?
 	/*
 	 * Since the following statement evaluates to 1
 	 * "N_ELEMENTS(mask(0,*)"
@@ -83,7 +100,7 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 	interpol( fThrData, fThrWave, iThrElem, fTxx, fTyy, iCount1 );
 	
 	// Plot before interpol
-	int iPlot = 0; // results okay
+	int iPlot = 0; 
 	if( iPlot == 1)
 	{
 		ofstream logFile;
@@ -110,10 +127,10 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 		logFile.clear();
 	}
 	
-	
-	float fSigmaY = fSigma * 2; // CHANGE:Assuming that sig is not an array & why the hell is it indexed in ecorr.pro?
+	float fSigmaY = fSigma * 2; // CHANGE:Assuming that sig is not an array & why is it indexed in ecorr.pro?
 	BYTE mmm[iCount1];
 	
+	if( iVerbose > 0 )
 	cout << "Count1: " << iCount1 << endl;
 
 	for( i=0; i<iCount1; i++)
@@ -139,14 +156,14 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 	}
 	
 	long lMinPoints = long( iCount1 * 0.1 ); 	
-	//------------------------------------------------------------------------------------------------
-	
+		
 	float fDln_sig[iObsElem];
 	
 	for( i=0; i < iObsElem; i++ )
 	{
 		fDln_sig[i] = fSigma / std::max( fObsData[i], fEps);
 	}
+	
 	/*
 	 * Since , the following statement always evaluates to 1, we will not enclose following
 	 * statements in for
@@ -175,13 +192,12 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 	for( i=0; i< iObsElem; i++)
 	{
 		fPhi[i] = fRf[i];
-		//cout << fPhi[i] << " ";
 	}
 	
 	int iIndex2[iObsElem];
 	int iCount2 = IdlWhere( fPhi, "<", 0.1f, iObsElem, iIndex2 );
 	
-	if( iCount2 > 0 ) // control never actually  goes here !
+	if( iCount2 > 0 ) // control never goes here actually !
 	{
 		for( i=0; i<iCount2; i++)
 		{
@@ -237,6 +253,8 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 	
 	float fSum = 0.0d;
 	float fds = 1.0d/ IdlTotal( fPhi, iObsElem);
+	
+	if( iVerbose > 0 )
 	cout << "fds: " << fds << endl;
 	
 	if( iPcnt > 0 )
@@ -264,6 +282,7 @@ double * ecorr( float * fThrWave, float * fThrData, int iThrElem, float * fObsWa
 		}
 		fSum = fSum + IdlTotal( fTemp, iNcnt );
 	}
+	
 	cout << "fSum: " << fSum << endl;
 
 	dMp[0] = fSum * fds; 

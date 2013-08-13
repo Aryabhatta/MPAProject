@@ -68,7 +68,7 @@ void cont_rscl( float *  fObsWave, float * fObsData, int iObsElem, float * fThrW
 	
 	float fSmall = 0.0;
 	
-	// NOTE: all keyword set messages at line 24 in cont_rscl.pro are set as default arguments
+	/* NOTE: all keyword set messages at line 24 in cont_rscl.pro are set as default arguments */
 	
 	double fS[ iCount1];
 	float fPhi[ iCount1 ];
@@ -242,7 +242,7 @@ void cont_rscl( float *  fObsWave, float * fObsData, int iObsElem, float * fThrW
 		fObsWlog[i] = log( fObsW[i] );		
 	}
 	
-	interpol( fThrD, fThrWlog, iCount2, fObsWlog, fT, iCount2 ); // ERROR: ambiguity here in iCount1 & iCount2 TODO
+	interpol( fThrD, fThrWlog, iCount2, fObsWlog, fT, iCount2 ); // TODO: ambiguity here in iCount1 & iCount2 
 																 // Currently keeping iCount2 as it matches with original for interpolation
 																 // Confirm if the no of points in theoretical & observed spectra 
 																 // will always be same or not
@@ -253,6 +253,7 @@ void cont_rscl( float *  fObsWave, float * fObsData, int iObsElem, float * fThrW
 	{
 		ofstream logFile;
 		string strThr = ReadInput("DIR:LOGDIR") + "thr.log";
+		
 		//string strObs("/home/shrikant/Desktop/MPA/Log/obs.log");
 		string strObs = ReadInput("DIR:LOGDIR") + "obs.log";
 		
@@ -332,6 +333,7 @@ iterate:
 	{
 		float fS3[ iCount1 ];
 		float fX2[ iCount1 ];
+		
 		int iSizeS2s =(iCount1<iCount2?iCount1:iCount2); // if throreotical = observed, then iCount1=iCount2
 		int iSizeS2g =(iCount1>iCount2?iCount1:iCount2); // this logic can change is found that #points in obs spectra
 														 // is always equal to #pts in thr spectra
@@ -368,8 +370,8 @@ iterate:
 		
 		float fA0 = IdlTotal( fS2T, iSizeS2g );
 		
-		// to compute the sum of s2t(iSizeS2g) * x(iCount1), need to do 
-		// hell indexing again & again
+		// to compute the sum of s2t(iSizeS2g) * x(iCount1),  
+		// need to do indexing again 
 		iSizeS2s = (iSizeS2g < iCount1)? iSizeS2g : iCount1;
 		iSizeS2g = (iSizeS2g > iCount1)? iSizeS2g : iCount1;
 		float temp1[iSizeS2g];
@@ -377,6 +379,7 @@ iterate:
 		{
 			temp1[i] = fS2T[i] * fObsWlog[i];
 		}
+		
 		// Copy remaining
 		if( iSizeS2s == iCount1 )
 		{
@@ -423,11 +426,12 @@ iterate:
 			{
 				fX[i] = log(fObsWave[i]) - fXm;
 			}
+			
 			// input to the poly function is a vector
 			// hence the output of poly will be a vector
 			poly( fX, iObsElem, fA , fB, fRy );
 		}
-	} // end of lin prakar
+	} 
 	else
 	{
 		float fS3[ iCount1 ];
@@ -472,8 +476,8 @@ iterate:
 		
 		float fA0 = IdlTotal( fS2T, iSizeS2g );
 
-		// to compute the sum of s2t(iSizeS2g) * x(iCount1), need to do 
-		// hell indexing again & again
+		// To compute the sum of s2t(iSizeS2g) * x(iCount1),  
+		// Need to do indexing again & again
 		iSizeS2s = (iSizeS2g < iCount1)? iSizeS2g : iCount1;
 		iSizeS2g = (iSizeS2g > iCount1)? iSizeS2g : iCount1;
 		float temp1[iSizeS2g];
@@ -588,14 +592,14 @@ iterate:
 		
 		int iIndex8[ iCount1 ];
 		
-		// CHANGE 'ERROR': Currently writing fT[0] instead of some particular value
+		// CHANGE: Currently writing fT[0] instead of some particular value
 		// as in the idl version 't' is passed to "Where", but the value to be compared with
-		// cannot be an array !!! O God  !
+		// cannot be an array !!! 
 		int iCount8 = IdlWhere( temp, "<", fT[0], iCount1, iIndex8 );
 
 		for( i=0; i < iCount1 ; i++)
 		{
-			temp[i] = fRy[i] * (fS[i] - 2.0 * fSigma ); // CHANGE: check 2. is 2.0 or not 
+			temp[i] = fRy[i] * (fS[i] - 2.0 * fSigma );  
 		}
 
 		int iIndex9[ iCount1 ];
@@ -632,6 +636,7 @@ iterate:
 				int iIndex11[iCount1];
 				
 				int iCount9 = 0, iCount10 = 0, iCount11 =0;
+				
 				// Custom IDL where for satisfying 3 conditions on different arrays
 				for( int ki=0; ki < (iElemhighprio/3)-1; ki++)
 				{
@@ -694,11 +699,12 @@ iterate:
 			{
 				cout << endl << "Bounding " << iCount9 << "points:" << endl;
 			}
-			// ??????
+			
 			for( i=0; i<iCount9; i++)
 			{
 				cout << "Points:" << fObsW[iIndex9[i]];				
 			}
+			
 			if(fRf != 0 )
 			{
 				int iCount13 = 0;
@@ -718,7 +724,7 @@ iterate:
 					{
 						float temp = 20.0 * (fRf[iIndex9[iIndex13[i]]]);
 						
-						if( temp > 0.9 && temp > fSmall ) // COnfirm the logic once by running IDL script
+						if( temp > 0.9 && temp > fSmall ) // Confirm the logic once by running IDL script
 						{
 							fPhi[iIndex9[iIndex13[i]]] = temp;						
 						}
@@ -729,7 +735,7 @@ iterate:
 					}
 				}
 			}// endif fRf!=0			
-		}// endif (count9 > 0 & iStrong ==1)
+		}// endif (count9 > 0 & iStrong == 1)
 		
 		if( iCount8  < (iCount1/3)) // '!<' = '>='
 		{
@@ -755,7 +761,6 @@ iterate:
 		logFile.clear();
 	}
 	
-/**/
 	return; 
 }
 

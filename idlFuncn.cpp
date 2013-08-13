@@ -20,18 +20,4 @@
 
 using namespace std;
 
-/*template < class T >
-T IdlMax( T Arr[], int iSizeArr )
-{
-    T max = 0;
-    for( int i = 0; i < iSizeArr ; i ++ )
-    {
-        if( Arr[i] > max )
-        {
-            max = Arr[i];
-        }
-    }
-
-    return max;
-}
-*/
+// NOTE: All routines implemented in the header file only

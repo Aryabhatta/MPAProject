@@ -53,6 +53,10 @@ int main(int iArgCnt, char * pArg[])
 string Fid = ReadInput( "ARG:FID"); 
 int iFid = atoi(Fid.c_str());
 
+// get the verbose level
+string strVerbose = ReadInput( "ARG:VERBOSE"); 
+int iVerbose = atoi( strVerbose.c_str() );
+
 int	    iConv = 1;
 int 	iNomc = 0;
 
@@ -92,7 +96,7 @@ string strTemp( "_" );
 strTemp.append( Fid ); 
 strTemp.append( ".log" );
 
-// Creatung a name for a log file
+// Creating a name for a log file
 strLog.replace( strLog.find(".fits"), 5, strTemp);
 
 string strGrid( "noconv" );	// explicit convolution
@@ -135,7 +139,7 @@ if ( !strLog.empty() )
     // Status Msg
     cout << endl << "Logfile = " << strFileSpecs << endl; 
     
-    // logFile << "This is to check whether \n the code is \n working";
+    // logFile << "This is to check whether \n the logfile is \n written";
 }
 
 // get time to calculate the program runtime.
@@ -216,25 +220,25 @@ char * comment = new char [100];
 
 // Read no of coloumns in the table
 fits_read_key( fptr, TINT, "NAXIS1" , &naxis1, comment, &iStatus);
-cout << endl << "Naxis1 = #cols = " << naxis1 << "  Comment = " << \
-comment<< endl;
+if( iVerbose > 0 )
+	cout << endl << "Naxis1 = #cols = " << naxis1 << "  Comment = " << comment<< endl;
 
 // Read no of rows in the table
 fits_read_key( fptr, TINT, "NAXIS2" , &naxis2, comment, &iStatus);
-cout << "Naxis2 = #rows = " << naxis2 << "  Comment = " << \
-comment<< endl;
+if( iVerbose > 0 )
+	cout << "Naxis2 = #rows = " << naxis2 << "  Comment = " << comment<< endl;
 
 float fCrval1, fCoeff1;
 
 // Read CRVAL1
 fits_read_key( fptr, TFLOAT, "CRVAL1" , &fCrval1, comment, &iStatus);
-cout << "Crval1 = " << fCrval1 << "  Comment = " << \
-comment<< endl;
+if( iVerbose > 0 )
+	cout << "Crval1 = " << fCrval1 << "  Comment = " << comment<< endl;
 
 // Read COEFF1
 fits_read_key( fptr, TFLOAT, "COEFF1" , &fCoeff1, comment, &iStatus);
-cout << "Coeff1 = " << fCoeff1 << "  Comment = " << \
-comment<< endl << endl;
+if( iVerbose > 0 )
+	cout << "Coeff1 = " << fCoeff1 << "  Comment = " << comment<< endl << endl;
 
 // * creating Wavelength array *
 float * fWavelengths = new float [ naxis1 ];
@@ -251,6 +255,7 @@ while( iCntr1 < naxis1 )
 }
 
 // Status
+cout << endl ;
 cout << "Wavelength array created from values of "; 
 cout << "CRVAL1, COEFF1 & NAXIS1 !" << endl;
 
@@ -262,7 +267,7 @@ int anynull;
 
 // Reading data from file corresponding to particular fiber for which we read Rlogz,RTeff, Rlogg 
 // Status Msg
-cout << "Reading Data for FID = " << iFid << endl; 
+cout << endl <<  "Reading Data for FID = " << iFid << endl; 
 
 firstelem = ( ( iFid - 1 ) * naxis1 ) + 1;
 nelements = naxis1;
@@ -271,7 +276,7 @@ nelements = naxis1;
 fits_read_img( fptr, TFLOAT, firstelem, nelements, &nullval, data, &anynull, &iStatus);
 
 // Status
-cout << "Row corresponding to FID read !" << endl;
+cout << "Observed spectrum corresponding to FID read !" << endl;
 
 fits_close_file( fptr, &iStatus );
 
@@ -339,8 +344,11 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
     cout << "wr = [ " << arrWr[0] << " , " << arrWr[1] << " ]" << endl;
     
     // Status
-    cout << "Sampling the only wavelengths that lie between ";
-    cout << arrWr[0] << " and " << arrWr[1] << endl;
+    if( iVerbose > 0 )
+    {
+    	cout << "Sampling the only wavelengths that lie between ";
+    	cout << arrWr[0] << " and " << arrWr[1] << endl;
+    }
 
     // Sampling the wavelengths that lie between arrWr[0] and arrWr[1]
     int iElements = 0;
@@ -410,8 +418,11 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
     }
 
     // Status
-    cout << "DataMax = " << fDataMax << "\t" ;
-    cout << "DataMin = " << fDataMin << endl;
+    if( iVerbose > 0 )
+    {
+    	cout << "DataMax = " << fDataMax << "\t" ;
+    	cout << "DataMin = " << fDataMin << endl;
+    }
 
     // Byte array for masking   
     unsigned char * arrMask = new unsigned char[ iElements ];
@@ -508,9 +519,12 @@ for( int iCntr = 0; iCntr < 1; iCntr++ )
             fRlogg = strtof( strTemp.c_str(), NULL );
 
             // Status Msg
-            cout << "Rlogz = " << fRlogz << "\t";
-            cout << "Rteff = " << fRteff << "\t";
-            cout << "Rlogg = " << fRlogg << endl;
+            if( iVerbose == 1)
+            {
+            	cout << "Rlogz = " << fRlogz << "\t";
+            	cout << "Rteff = " << fRteff << "\t";
+            	cout << "Rlogg = " << fRlogg << endl;
+            }
         }
         else // EOF reached
         {

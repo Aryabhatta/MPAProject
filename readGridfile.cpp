@@ -1,14 +1,34 @@
+/*************************************************************************
+*
+* Copyright:		Max Planck Institute for Astrophysics (MPA)
+* 
+* File:				readGridfile.cpp
+*
+* Routine Info:		Routines for reading various things from grid file
+* 					(FITS format)			
+*       			
+* Author:
+*
+* Modification 
+* Log:	    		Added routine main
+*		        	Shrikant V	Dec 11, 2012	16:20
+*
+**************************************************************************/
+
 #include <iostream>
 
 #include "readGridfile.hpp"
+#include "modules.hpp"
 using namespace std;
-
-#define print 0
 
 bool readGridParams( string strGridFileSpecs, float * pars, int iIdx)
 {
 	fitsfile * fptr;
 	int iStatus = 0;
+	
+	// get the verbose level
+	string strVerbose = ReadInput( "ARG:VERBOSE"); 
+	int iVerbose = atoi( strVerbose.c_str() );
 	
 	// Opening the FITS file
     fits_open_file( &fptr, strGridFileSpecs.data(), READONLY, &iStatus );
@@ -39,7 +59,7 @@ bool readGridParams( string strGridFileSpecs, float * pars, int iIdx)
    fits_movabs_hdu( fptr, hdunum, &hdutype, &iStatus );
    fits_get_hdu_num( fptr, &hdunum );
    
-   if( print )
+   if( iVerbose == 2 )
    switch(hdutype)
    {   
 	   case IMAGE_HDU: cout << "Image HDU " << endl; break;
@@ -49,12 +69,12 @@ bool readGridParams( string strGridFileSpecs, float * pars, int iIdx)
    
    // Read no of cols in the table = different wavelengths
    fits_read_key( fptr, TINT, "NAXIS1" , &naxis1, comment, &iStatus);
-   if( print )
+   if( iVerbose == 2 )
    cout << endl << "Naxis1 = #cols = " << naxis1 << "  Comment = " << comment<< endl;
    
    // Read no of rows in the table = different fluxes
    fits_read_key( fptr, TINT, "NAXIS2" , &naxis2, comment, &iStatus);
-   if( print )
+   if( iVerbose == 2 )
    cout << "Naxis2 = #rows = " << naxis2 << "  Comment = " << comment<< endl;
    
    // sanitise input array
@@ -82,12 +102,11 @@ bool readGridParams( string strGridFileSpecs, float * pars, int iIdx)
 		   cout << endl << "Error with reading the coloumn !" << "Aborting.." << endl;
 		   return false;
 	   }
-	   if( print )
+	   if( iVerbose == 2 )
 	   cout << " " << pars[i];
    }
    
-   // control here => data read successfully
-   
+   // control here => data read successfully   
    fits_close_file( fptr, &iStatus );
    return true;
 	
@@ -97,7 +116,11 @@ bool readGridDim( string strGridFileSpecs, int iHdu,  int * naxis1,  int * naxis
 {
 	fitsfile * fptr;
 	int iStatus = 0;
-	
+
+	// get the verbose level
+	string strVerbose = ReadInput( "ARG:VERBOSE"); 
+	int iVerbose = atoi( strVerbose.c_str() );
+
 	// Opening the FITS file
     fits_open_file( &fptr, strGridFileSpecs.data(), READONLY, &iStatus );
     if( iStatus ) 
@@ -127,10 +150,10 @@ bool readGridDim( string strGridFileSpecs, int iHdu,  int * naxis1,  int * naxis
    hdunum = iHdu;    
    fits_movabs_hdu( fptr, hdunum, &hdutype, &iStatus );
    fits_get_hdu_num( fptr, &hdunum );
-   if( print )
+   if( iVerbose == 2 )
    cout << endl << "Current HDU:" << hdunum << endl;
    
-   if( print )
+   if( iVerbose == 2 )
    switch(hdutype)
    {   
 	   case IMAGE_HDU: cout << "Image HDU " << endl; break;
@@ -140,12 +163,12 @@ bool readGridDim( string strGridFileSpecs, int iHdu,  int * naxis1,  int * naxis
    
    // Read no of cols in the table = different wavelengths
    fits_read_key( fptr, TINT, "NAXIS1" , &naxis11, comment, &iStatus);
-   if( print )
+   if( iVerbose == 2 )
    cout << endl << "Naxis1 = #cols = " << naxis11 << "  Comment = " << comment<< endl;
    
    // Read no of rows in the table = different fluxes
    fits_read_key( fptr, TINT, "NAXIS2" , &naxis22, comment, &iStatus);
-   if( print )
+   if( iVerbose == 2 )
    cout << "Naxis2 = #rows = " << naxis22 << "  Comment = " << comment<< endl;
    
    *naxis1 = naxis11;
@@ -166,7 +189,11 @@ bool readGridFlux( string strGridFileSpecs, float * flux, int iIdx)
 {
 	fitsfile * fptr;
 	int iStatus = 0;
-	
+
+	// get the verbose level
+	string strVerbose = ReadInput( "ARG:VERBOSE"); 
+	int iVerbose = atoi( strVerbose.c_str() );
+
 	// Opening the FITS file
     fits_open_file( &fptr, strGridFileSpecs.data(), READONLY, &iStatus );
     if( iStatus ) 
@@ -196,7 +223,7 @@ bool readGridFlux( string strGridFileSpecs, float * flux, int iIdx)
    fits_movabs_hdu( fptr, hdunum, &hdutype, &iStatus );
    fits_get_hdu_num( fptr, &hdunum );
    
-   if( print )
+   if( iVerbose == 2 )
    switch(hdutype)
    {   
 	   case IMAGE_HDU: cout << "Image HDU " << endl; break;
@@ -206,12 +233,12 @@ bool readGridFlux( string strGridFileSpecs, float * flux, int iIdx)
    
    // Read no of cols in the table = different wavelengths
    fits_read_key( fptr, TINT, "NAXIS1" , &naxis1, comment, &iStatus);
-   if( print )
+   if( iVerbose == 2 )
    cout << endl << "Naxis1 = #cols = " << naxis1 << "  Comment = " << comment<< endl;
    
    // Read no of rows in the table = different fluxes
    fits_read_key( fptr, TINT, "NAXIS2" , &naxis2, comment, &iStatus);
-   if( print )
+   if( iVerbose == 2 )
    cout << "Naxis2 = #rows = " << naxis2 << "  Comment = " << comment<< endl;
    
    // Sanitise the flux array before reading into it
@@ -255,7 +282,11 @@ bool readGridWave( string strGridFileSpecs, float ** fWave,  int * iWaveCnt)
 {
 	fitsfile * fptr;
 	int iStatus = 0;
-	
+
+	// get the verbose level
+	string strVerbose = ReadInput( "ARG:VERBOSE"); 
+	int iVerbose = atoi( strVerbose.c_str() );
+
 	// Opening the FITS file
     fits_open_file( &fptr, strGridFileSpecs.data(), READONLY, &iStatus );
     if( iStatus ) 
@@ -271,7 +302,7 @@ bool readGridWave( string strGridFileSpecs, float ** fWave,  int * iWaveCnt)
     char * comment = new char [100];
     fits_get_num_hdus(fptr, &hdunum, &iStatus );
     
-    if( print )
+    if( iVerbose == 2 )
     cout << "No of HDU's:" << hdunum << endl;
     
     // confirm if the no of HDU's are 3, if not, print erro
@@ -284,12 +315,12 @@ bool readGridWave( string strGridFileSpecs, float ** fWave,  int * iWaveCnt)
     }
     // Confirm whether it is the first HDU
     fits_get_hdu_num( fptr, &hdunum );
-    if( print )
+    if( iVerbose == 2 )
     cout << endl << "Current HDU:" << hdunum << endl;
     
     fits_get_hdu_type(fptr, &hdutype, &iStatus);
     
-    if( print )
+    if( iVerbose == 2 )
     switch(hdutype)
     {
     case IMAGE_HDU: cout << "Image HDU " << endl; break;
@@ -301,7 +332,7 @@ bool readGridWave( string strGridFileSpecs, float ** fWave,  int * iWaveCnt)
     
     // Read no of rows in the table
     fits_read_key( fptr, TINT, "NAXIS1" , &naxis1, comment, &iStatus);
-    if( print )
+    if( iVerbose == 2 )
     cout << endl << "Naxis1 = #rows = " << naxis1 << "  Comment = " << comment<< endl;
     
     // allocating size of original array
@@ -342,7 +373,11 @@ bool GridDescrExists( string strGridFileSpecs, int iIdx)
 {
 	fitsfile * fptr;
 	int iStatus = 0;
-	
+
+	// get the verbose level
+	string strVerbose = ReadInput( "ARG:VERBOSE"); 
+	int iVerbose = atoi( strVerbose.c_str() );
+
 	// Opening the FITS file
     fits_open_file( &fptr, strGridFileSpecs.data(), READONLY, &iStatus );
     if( iStatus ) 
@@ -358,7 +393,7 @@ bool GridDescrExists( string strGridFileSpecs, int iIdx)
     char * comment = new char [100];
     fits_get_num_hdus(fptr, &hdunum, &iStatus );
     
-    if( print )
+    if( iVerbose == 2 )
     cout << "No of HDU's:" << hdunum << endl;
     
     // confirm if the no of HDU's are 3, if not, print erro
@@ -375,10 +410,10 @@ bool GridDescrExists( string strGridFileSpecs, int iIdx)
    fits_movabs_hdu( fptr, hdunum, &hdutype, &iStatus );
    fits_get_hdu_num( fptr, &hdunum );
    
-   if( print )
+   if( iVerbose == 2 )
    cout << endl << "Current HDU:" << hdunum << endl;
    
-   if( print )
+   if( iVerbose == 2 )
    switch(hdutype)
    {   
 	   case IMAGE_HDU: cout << "Image HDU " << endl; break;
@@ -389,17 +424,17 @@ bool GridDescrExists( string strGridFileSpecs, int iIdx)
    // Read no of cols in the table
    fits_read_key( fptr, TINT, "NAXIS1" , &naxis1, comment, &iStatus);
    
-   if( print )
+   if( iVerbose == 2 )
    cout << endl << "Naxis1 = #cols = " << naxis1 << "  Comment = " << comment<< endl;
    
    // Read no of rows in the table
    fits_read_key( fptr, TINT, "NAXIS2" , &naxis2, comment, &iStatus);
    
-   if( print )
+   if( iVerbose == 2 )
    cout << "Naxis2 = #rows = " << naxis2 << "  Comment = " << comment<< endl;
    
    // Reading data for iIdx
-   if( print )
+   if( iVerbose == 2 )
    cout << "Reading data belonging to coloumn: " << iIdx << endl;
    
    float fData[ naxis2 ]; // reading all rows
@@ -422,7 +457,7 @@ bool GridDescrExists( string strGridFileSpecs, int iIdx)
 		   cout << endl << "Error with reading the coloumn !" << "Aborting.." << endl;
 		   return false;
 	   }
-	   if( print )
+	   if( iVerbose == 2 )
 	   cout << " " << fData[i];
    }
    
@@ -437,7 +472,11 @@ void readGrid( string GridFileSpecs, float * fWavelen, float * fFlux )
 {
 	fitsfile *fptr;
 	int iStatus = 0;    // Must initialise 'status'
-	
+
+	// get the verbose level
+	string strVerbose = ReadInput( "ARG:VERBOSE"); 
+	int iVerbose = atoi( strVerbose.c_str() );
+
 	// Opening the FITS file
     fits_open_file( &fptr, GridFileSpecs.data(), READONLY, &iStatus );
     if( iStatus ) 
@@ -506,7 +545,6 @@ void readGrid( string GridFileSpecs, float * fWavelen, float * fFlux )
      * made coloumns & col as rows, waiting for that...
      * Leaving the function, keeping this logic intact
      **************************************************************/
-   
         
     // Move to 2nd HDU
     hdunum = 2;    
